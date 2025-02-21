@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MultiStream - Twitch & Kick</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #121212;
+            color: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+        }
+        .container {
+            display: flex;
+            gap: 10px;
+            width: 90%;
+            height: 90%;
+        }
+        .main-stream {
+            flex: 2;
+        }
+        .sidebar {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        iframe {
+            border: none;
+            width: 100%;
+        }
+        .kick-player {
+            height: 100%;
+        }
+        .twitch-player {
+            height: 40%;
+        }
+        .twitch-chat {
+            height: 60%;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Kick Player (Główny) -->
+        <div class="main-stream">
+            <iframe class="kick-player" src="https://player.kick.com/adamekl" allowfullscreen></iframe>
+        </div>
+
+        <!-- Twitch Player + Chat -->
+        <div class="sidebar">
+            <!-- Twitch Player (mniejszy, nad czatem) -->
+            <iframe class="twitch-player" src="https://player.twitch.tv/?channel=adamekl&parent=twojanazwa.github.io" allowfullscreen></iframe>
+            
+            <!-- Twitch Chat -->
+            <iframe class="twitch-chat" src="https://www.twitch.tv/embed/adamekl/chat?parent=twojanazwa.github.io"></iframe>
+        </div>
+    </div>
+
+</body>
+</html>
