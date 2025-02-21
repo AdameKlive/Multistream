@@ -17,18 +17,20 @@
         }
         .container {
             display: flex;
-            gap: 10px;
             width: 90%;
             height: 90%;
         }
         .main-stream {
-            flex: 2;
+            flex: 3;
+            background-color: #32CD32; /* Zielone tło jak Kick */
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         .sidebar {
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 10px;
         }
         iframe {
             border: none;
@@ -38,10 +40,12 @@
             height: 100%;
         }
         .twitch-player {
-            height: 40%;
+            height: 35%;
+            background-color: red; /* Tło jak na obrazie */
         }
         .twitch-chat {
-            height: 60%;
+            height: 65%;
+            background-color: #9370DB; /* Fioletowe tło jak na obrazie */
         }
     </style>
 </head>
@@ -56,10 +60,14 @@
         <!-- Twitch Player + Chat -->
         <div class="sidebar">
             <!-- Twitch Player (mniejszy, nad czatem) -->
-            <iframe class="twitch-player" src="https://player.twitch.tv/?channel=adamekl&parent=twojanazwa.github.io" allowfullscreen></iframe>
-            
+            <div class="twitch-player">
+                <iframe src="https://player.twitch.tv/?channel=adamekl&parent=twojanazwa.github.io" frameborder="0" allowfullscreen="true"></iframe>
+            </div>
+
             <!-- Twitch Chat -->
-            <iframe class="twitch-chat" src="https://www.twitch.tv/embed/adamekl/chat?parent=twojanazwa.github.io"></iframe>
+            <div class="twitch-chat">
+                <iframe src="https://www.twitch.tv/embed/adamekl/chat?parent=twojanazwa.github.io"></iframe>
+            </div>
         </div>
     </div>
 
