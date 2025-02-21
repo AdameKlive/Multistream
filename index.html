@@ -14,6 +14,11 @@
             justify-content: center;
             align-items: center;
         }
+        .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
         .main-stream {
             width: 960px; /* Wymiary dla playera Kick */
             height: 540px; /* Wysokość dla playera Kick */
@@ -22,27 +27,27 @@
             width: 440px; /* Szerokość czatu i playera Twitch */
             display: flex;
             flex-direction: column;
-            height: 100%;
         }
         iframe {
             border: none;
-            width: 100%;
         }
         .kick-player {
+            width: 100%;
             height: 100%;
         }
         .twitch-player {
+            width: 100%;
             height: 320px; /* Wysokość playera Twitch */
         }
         .twitch-chat {
-            height: 220px; /* Wysokość czatu Twitch */
+            width: 100%;
+            height: 620px; /* Wysokość czatu Twitch */
         }
     </style>
 </head>
 <body>
 
-    <!-- Główna sekcja -->
-    <div style="display: flex;">
+    <div class="container">
         <!-- Kick Player (Główny) -->
         <div class="main-stream">
             <iframe class="kick-player" src="https://player.kick.com/adamekl" allowfullscreen></iframe>
