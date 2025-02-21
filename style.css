@@ -1,51 +1,52 @@
-/* Resetowanie marginesów i paddingu */
+/* Resetowanie marginesów i paddingu, aby wszystko przylegało do krawędzi */
 * {
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    width: 100%;
 }
 
 body {
-    margin: 0;
-    padding: 0;
-    height: 100vh;
     background-color: #000;
     display: flex;
-    justify-content: center;
-    align-items: center;
+    justify-content: flex-start;
+    align-items: flex-start;
 }
 
 .container {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    width: 100%;
+    height: 100%;
 }
 
 .main-stream {
-    width: 960px; /* Wymiary dla playera Kick */
-    height: 540px; /* Wysokość dla playera Kick */
+    flex: 1; /* Główna szerokość dla playera Kick */
 }
 
 .sidebar {
-    width: 440px; /* Szerokość czatu i playera Twitch */
+    width: 440px; /* Szerokość dla czatu i Twitch Player */
     display: flex;
     flex-direction: column;
 }
 
 iframe {
     border: none;
+    width: 100%; /* Zajmuje całą szerokość kontenera */
+    height: 100%; /* Zajmuje całą wysokość kontenera */
 }
 
 .kick-player {
-    width: 100%;
-    height: 100%;
+    height: 100%; /* Wypełnia całą wysokość kontenera */
 }
 
 .twitch-player {
-    width: 100%;
     height: 320px; /* Wysokość playera Twitch */
 }
 
 .twitch-chat {
-    width: 100%;
     height: 620px; /* Wysokość czatu Twitch */
 }
