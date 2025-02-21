@@ -10,7 +10,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #121212;
+            background-color: #000;
             color: white;
             font-family: Arial, sans-serif;
             margin: 0;
@@ -22,7 +22,6 @@
         }
         .main-stream {
             flex: 3;
-            background-color: #32CD32; /* Zielone tło jak Kick */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -41,11 +40,9 @@
         }
         .twitch-player {
             height: 35%;
-            background-color: red; /* Tło jak na obrazie */
         }
         .twitch-chat {
             height: 65%;
-            background-color: #9370DB; /* Fioletowe tło jak na obrazie */
         }
     </style>
 </head>
@@ -61,12 +58,12 @@
         <div class="sidebar">
             <!-- Twitch Player (mniejszy, nad czatem) -->
             <div class="twitch-player">
-                <iframe src="https://player.twitch.tv/?channel=adamekl&parent=adameklive.github.io" frameborder="0" allowfullscreen="true"></iframe>
+                <iframe src="https://player.twitch.tv/?channel=adamekl&parent=adameklive.github.io&parent=www.adameklive.github.io&parent=adameklive.github.io/Multistream&parent=www.adameklive.github.io/Multistream" allowfullscreen="true"></iframe>
             </div>
 
             <!-- Twitch Chat -->
             <div class="twitch-chat">
-                <iframe src="https://www.twitch.tv/embed/adamekl/chat?parent=adameklive.github.io"></iframe>
+                <iframe src="https://www.twitch.tv/embed/adamekl/chat?parent=adameklive.github.io&parent=www.adameklive.github.io&parent=adameklive.github.io/Multistream&parent=www.adameklive.github.io/Multistream"></iframe>
             </div>
         </div>
     </div>
