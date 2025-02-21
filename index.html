@@ -4,45 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MultiStream - Twitch & Kick</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            background-color: #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .main-stream {
-            width: 960px; /* Wymiary dla playera Kick */
-            height: 540px; /* Wysokość dla playera Kick */
-        }
-        .sidebar {
-            width: 440px; /* Szerokość czatu i playera Twitch */
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
-        iframe {
-            border: none;
-            width: 100%;
-        }
-        .kick-player {
-            height: 100%;
-        }
-        .twitch-player {
-            height: 320px; /* Wysokość playera Twitch */
-        }
-        .twitch-chat {
-            height: 220px; /* Wysokość czatu Twitch */
-        }
-    </style>
+    <link rel="stylesheet" href="style.css"> <!-- Link do pliku CSS -->
 </head>
 <body>
 
-    <!-- Główna sekcja -->
-    <div style="display: flex;">
+    <div class="container">
         <!-- Kick Player (Główny) -->
         <div class="main-stream">
             <iframe class="kick-player" src="https://player.kick.com/adamekl" allowfullscreen></iframe>
@@ -61,6 +27,8 @@
             </div>
         </div>
     </div>
+
+    <script src="script.js"></script> <!-- Link do pliku JavaScript (opcjonalnie) -->
 
 </body>
 </html>
