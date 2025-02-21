@@ -14,19 +14,12 @@
             justify-content: center;
             align-items: center;
         }
-        .container {
-            display: flex;
-            width: 100%;
-            height: 100%;
-        }
         .main-stream {
-            flex: 3;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            width: 960px; /* Wymiary dla playera Kick */
+            height: 540px; /* Wysokość dla playera Kick */
         }
         .sidebar {
-            width: 440px; /* Szerokość czatu */
+            width: 440px; /* Szerokość czatu i playera Twitch */
             display: flex;
             flex-direction: column;
             height: 100%;
@@ -39,16 +32,17 @@
             height: 100%;
         }
         .twitch-player {
-            height: 35%;
+            height: 320px; /* Wysokość playera Twitch */
         }
         .twitch-chat {
-            height: 65%;
+            height: 220px; /* Wysokość czatu Twitch */
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
+    <!-- Główna sekcja -->
+    <div style="display: flex;">
         <!-- Kick Player (Główny) -->
         <div class="main-stream">
             <iframe class="kick-player" src="https://player.kick.com/adamekl" allowfullscreen></iframe>
@@ -56,18 +50,14 @@
 
         <!-- Twitch Player + Chat -->
         <div class="sidebar">
-            <!-- Twitch Player (mniejszy, nad czatem) -->
+            <!-- Twitch Player (nad czatem) -->
             <div class="twitch-player">
-                <div style="padding-bottom: 56.25%; position: relative;">
-                    <iframe width="100%" height="100%" src="https://player.twitch.tv/?autoplay=false&channel=adamekl&parent=adameklive.github.io" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen" style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%;"></iframe>
-                </div>
+                <iframe src="https://player.twitch.tv/?autoplay=false&channel=adamekl&parent=adameklive.github.io" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen"></iframe>
             </div>
 
             <!-- Twitch Chat -->
             <div class="twitch-chat">
-                <div style="padding-bottom: 56.25%; position: relative;">
-                    <iframe width="100%" height="100%" src="https://www.twitch.tv/embed/adamekl/chat?parent=adameklive.github.io" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen" style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%;"></iframe>
-                </div>
+                <iframe src="https://www.twitch.tv/embed/adamekl/chat?parent=adameklive.github.io" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen"></iframe>
             </div>
         </div>
     </div>
