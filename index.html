@@ -23,7 +23,9 @@
         #twitchPlayer {
             position: absolute;
             width: 40%;
-            height: 40%;
+            height: auto;
+            max-height: 320px;
+            min-height: 160px;
             top: 10px;
             left: 10px;
             border: 2px solid white;
@@ -103,7 +105,10 @@
             if (currentSize > 50) {
                 currentSize -= 10;
                 twitchPlayer.style.width = `${currentSize}%`;
-                twitchPlayer.style.height = `${currentSize}%`;
+                twitchPlayer.style.height = `${(currentSize * 9) / 16}px`;
+                if (twitchPlayer.offsetHeight < 160) {
+                    twitchPlayer.style.height = '160px';
+                }
             }
         });
 
@@ -111,7 +116,10 @@
             if (currentSize < 100) {
                 currentSize += 10;
                 twitchPlayer.style.width = `${currentSize}%`;
-                twitchPlayer.style.height = `${currentSize}%`;
+                twitchPlayer.style.height = `${(currentSize * 9) / 16}px`;
+                if (twitchPlayer.offsetHeight > 320) {
+                    twitchPlayer.style.height = '320px';
+                }
             }
         });
     </script>
