@@ -81,21 +81,32 @@
         let isMoving = false;
         let offsetX, offsetY;
 
+        // Przytrzymanie przycisku dla przenoszenia
         document.getElementById('move').addEventListener('mousedown', (e) => {
             isMoving = true;
             offsetX = e.clientX - twitchPlayer.offsetLeft;
             offsetY = e.clientY - twitchPlayer.offsetTop;
+            document.body.style.cursor = 'move'; // zmienia kursor na "move" podczas przenoszenia
         });
 
         document.addEventListener('mousemove', (e) => {
             if (isMoving) {
-                twitchPlayer.style.left = `${e.clientX - offsetX}px`;
-                twitchPlayer.style.top = `${e.clientY - offsetY}px`;
+                let newLeft = e.clientX - offsetX;
+                let newTop = e.clientY - offsetY;
+
+                // Ograniczenie ruchu w poziomie
+                newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - twitchPlayer.offsetWidth));
+                // Ograniczenie ruchu w pionie
+                newTop = Math.max(0, Math.min(newTop, window.innerHeight - twitchPlayer.offsetHeight));
+
+                twitchPlayer.style.left = `${newLeft}px`;
+                twitchPlayer.style.top = `${newTop}px`;
             }
         });
 
         document.addEventListener('mouseup', () => {
             isMoving = false;
+            document.body.style.cursor = 'default'; // Przywrócenie domyślnego kursora
         });
 
         let currentWidth = 854;
