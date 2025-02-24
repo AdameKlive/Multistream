@@ -22,34 +22,32 @@
         }
         #twitchPlayer {
             position: absolute;
-            width: 854px;
-            height: 480px;
+            width: 40%;
+            height: 40%;
             top: 10px;
             left: 10px;
+            resize: both;
+            overflow: hidden;
             border: 2px solid white;
-            display: flex;
-            flex-direction: column;
-        }
-        #twitchIframe {
-            width: 100%;
-            height: 100%;
         }
         .controls {
             position: absolute;
-            bottom: -35px;
+            bottom: 5px;
             left: 50%;
             transform: translateX(-50%);
             display: none;
-            gap: 5px;
             background: rgba(0, 0, 0, 0.6);
             padding: 5px;
             border-radius: 5px;
         }
-        .controls button, .controls input {
+        .controls button {
             background: white;
             border: none;
             padding: 5px;
             cursor: pointer;
+        }
+        #twitchPlayer:hover .controls {
+            display: flex;
         }
         #chat {
             width: 20%;
@@ -60,21 +58,14 @@
 </head>
 <body>
     <div id="container">
-        <div id="kickPlayerWrapper">
-            <iframe id="kickPlayer" src="https://kick.com/adamekl/embed?parent=adameklive.github.io" frameborder="0" allowfullscreen></iframe>
-            <div class="controls">
-                <button id="muteKick">🔊</button>
-                <input type="range" id="volumeKick" min="0" max="1" step="0.01" value="1">
-            </div>
-        </div>
+        <iframe id="kickPlayer" src="https://kick.com/adamekl/embed" frameborder="0" allowfullscreen></iframe>
         
         <div id="twitchPlayer">
-            <iframe id="twitchIframe" src="https://player.twitch.tv/?channel=adamekl&parent=adameklive.github.io" frameborder="0" allowfullscreen></iframe>
+            <iframe src="https://player.twitch.tv/?channel=adamekl&parent=adameklive.github.io" frameborder="0" allowfullscreen width="100%" height="100%"></iframe>
             <div class="controls">
+                <button id="move">🔼</button>
                 <button id="shrink">➖</button>
                 <button id="expand">➕</button>
-                <button id="move">🔼</button>
-                <input type="range" id="volumeTwitch" min="0" max="1" step="0.01" value="1">
             </div>
         </div>
     </div>
@@ -83,63 +74,7 @@
     
     <script>
         const twitchPlayer = document.getElementById('twitchPlayer');
-        const twitchIframe = document.getElementById('twitchIframe');
-        const controlsTwitch = document.querySelector('#twitchPlayer .controls');
-        const volumeTwitch = document.getElementById('volumeTwitch');
-        
-        const kickPlayerWrapper = document.getElementById('kickPlayerWrapper');
-        const kickPlayer = document.getElementById('kickPlayer');
-        const controlsKick = document.querySelector('#kickPlayerWrapper .controls');
-        const muteKick = document.getElementById('muteKick');
-        const volumeKick = document.getElementById('volumeKick');
-        
-        // Funkcje kontrolujące głośność
-        volumeTwitch.addEventListener('input', () => {
-            const volume = volumeTwitch.value;
-            twitchIframe.contentWindow.postMessage({ type: 'volume', value: volume }, '*');
-        });
-
-        muteKick.addEventListener('click', () => {
-            const currentVolume = volumeKick.value;
-            if (currentVolume > 0) {
-                volumeKick.value = 0;
-                kickPlayer.contentWindow.postMessage({ type: 'volume', value: 0 }, '*');
-                muteKick.innerText = '🔇';
-            } else {
-                volumeKick.value = 1;
-                kickPlayer.contentWindow.postMessage({ type: 'volume', value: 1 }, '*');
-                muteKick.innerText = '🔊';
-            }
-        });
-
-        volumeKick.addEventListener('input', () => {
-            const volume = volumeKick.value;
-            kickPlayer.contentWindow.postMessage({ type: 'volume', value: volume }, '*');
-        });
-
-        // Funkcje przycisków dla Twitch
-        let currentWidth = 854;
-        let currentHeight = 480;
-
-        document.getElementById('shrink').addEventListener('click', () => {
-            if (currentWidth > 427) {
-                currentWidth -= 85;
-                currentHeight = (currentWidth * 9) / 16;
-                twitchPlayer.style.width = `${currentWidth}px`;
-                twitchPlayer.style.height = `${Math.max(currentHeight, 160)}px`;
-            }
-        });
-
-        document.getElementById('expand').addEventListener('click', () => {
-            if (currentWidth < 854) {
-                currentWidth += 85;
-                currentHeight = (currentWidth * 9) / 16;
-                twitchPlayer.style.width = `${currentWidth}px`;
-                twitchPlayer.style.height = `${Math.min(currentHeight, 480)}px`;
-            }
-        });
-
-        // Przyciski przenoszenia Twitch Player
+        const controls = document.querySelector('.controls');
         let isMoving = false;
         let offsetX, offsetY;
 
@@ -152,12 +87,18 @@
 
         document.addEventListener('mousemove', (e) => {
             if (isMoving) {
-                let newLeft = e.clientX - offsetX;
-                let newTop = e.clientY - offsetY;
-                newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - twitchPlayer.offsetWidth));
-                newTop = Math.max(0, Math.min(newTop, window.innerHeight - twitchPlayer.offsetHeight));
-                twitchPlayer.style.left = `${newLeft}px`;
-                twitchPlayer.style.top = `${newTop}px`;
+                // Użycie requestAnimationFrame do zoptymalizowania ruchu
+                requestAnimationFrame(() => {
+                    let newLeft = e.clientX - offsetX;
+                    let newTop = e.clientY - offsetY;
+
+                    // Zapewnienie, że player nie wychodzi poza obszar okna
+                    newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - twitchPlayer.offsetWidth));
+                    newTop = Math.max(0, Math.min(newTop, window.innerHeight - twitchPlayer.offsetHeight));
+
+                    twitchPlayer.style.left = `${newLeft}px`;
+                    twitchPlayer.style.top = `${newTop}px`;
+                });
             }
         });
 
@@ -166,21 +107,36 @@
             document.body.style.cursor = 'default';
         });
 
-        // Pokazywanie przycisków kontrolnych
+        document.getElementById('shrink').addEventListener('click', () => {
+            let currentWidth = parseInt(twitchPlayer.style.width) || 40;
+            let currentHeight = parseInt(twitchPlayer.style.height) || 40;
+
+            if (currentWidth > 20) {
+                currentWidth -= 10;
+                currentHeight -= 10;
+                twitchPlayer.style.width = `${currentWidth}%`;
+                twitchPlayer.style.height = `${currentHeight}%`;
+            }
+        });
+
+        document.getElementById('expand').addEventListener('click', () => {
+            let currentWidth = parseInt(twitchPlayer.style.width) || 40;
+            let currentHeight = parseInt(twitchPlayer.style.height) || 40;
+
+            if (currentWidth < 40) {
+                currentWidth += 10;
+                currentHeight += 10;
+                twitchPlayer.style.width = `${currentWidth}%`;
+                twitchPlayer.style.height = `${currentHeight}%`;
+            }
+        });
+
         twitchPlayer.addEventListener('mouseenter', () => {
-            controlsTwitch.style.display = 'flex';
+            controls.style.display = 'flex';
         });
 
         twitchPlayer.addEventListener('mouseleave', () => {
-            controlsTwitch.style.display = 'none';
-        });
-
-        kickPlayerWrapper.addEventListener('mouseenter', () => {
-            controlsKick.style.display = 'flex';
-        });
-
-        kickPlayerWrapper.addEventListener('mouseleave', () => {
-            controlsKick.style.display = 'none';
+            controls.style.display = 'none';
         });
     </script>
 </body>
