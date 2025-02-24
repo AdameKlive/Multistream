@@ -10,13 +10,13 @@
             overflow: hidden;
             background-color: black;
             display: flex;
-            justify-content: center; /* Wyśrodkowanie elementów */
+            justify-content: center; /* Wyśrodkowanie całej zawartości */
         }
         #container {
             position: relative;
-            width: 80%;
             display: flex;
-            justify-content: space-between;
+            flex-direction: column; /* Ustawienie w pionie */
+            align-items: center;
         }
         #kickPlayer {
             width: 1533px; /* Szerokość 1533px */
@@ -24,29 +24,24 @@
             background-color: black;
         }
         #twitchPlayer {
-            position: absolute;
+            position: relative;
             width: 40%;
             height: 40%;
-            top: 10px;
-            left: 10px;
+            max-width: 854px; /* Max szerokość 854px */
+            max-height: 480px; /* Max wysokość 480px */
             border: 2px solid white;
         }
         .controls {
-            position: absolute;
-            top: 100%; /* Przesunięcie przycisków poniżej playera */
-            left: 50%;
-            transform: translateX(-50%);
             display: flex;
             justify-content: center;
-            margin-top: 10px;
-            background: rgba(0, 0, 0, 0.6);
-            padding: 5px;
-            border-radius: 5px;
+            gap: 10px;
+            margin-top: 10px; /* Odstęp między playerem a przyciskami */
+            display: none; /* Początkowo ukryte */
         }
         .controls button {
             background: white;
             border: none;
-            padding: 5px;
+            padding: 10px;
             cursor: pointer;
         }
         #chat {
@@ -64,7 +59,7 @@
             <iframe src="https://player.twitch.tv/?channel=adamekl&parent=adameklive.github.io" frameborder="0" allowfullscreen width="100%" height="100%"></iframe>
         </div>
 
-        <!-- Przenosimy przyciski do osobnego div-a -->
+        <!-- Przeniesione przyciski do kontenera -->
         <div class="controls">
             <button id="shrink">➖</button>
             <button id="expand">➕</button>
