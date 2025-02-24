@@ -22,8 +22,8 @@
         }
         #twitchPlayer {
             position: absolute;
-            width: 854px;  /* Max szerokość */
-            height: 480px; /* Max wysokość */
+            width: 854px;
+            height: 480px;
             top: 10px;
             left: 10px;
             border: 2px solid white;
@@ -36,16 +36,16 @@
         }
         .controls {
             position: absolute;
-            bottom: -35px; /* Ustawienie przycisków poniżej boxu */
+            bottom: -35px;
             left: 50%;
             transform: translateX(-50%);
-            display: none; /* Początkowo ukryte */
+            display: none;
             gap: 5px;
             background: rgba(0, 0, 0, 0.6);
             padding: 5px;
             border-radius: 5px;
         }
-        .controls button {
+        .controls button, .controls input {
             background: white;
             border: none;
             padding: 5px;
@@ -60,7 +60,13 @@
 </head>
 <body>
     <div id="container">
-        <iframe id="kickPlayer" src="https://kick.com/adamekl/embed?parent=adameklive.github.io" frameborder="0" allowfullscreen></iframe>
+        <div id="kickPlayerWrapper">
+            <iframe id="kickPlayer" src="https://kick.com/adamekl/embed?parent=adameklive.github.io" frameborder="0" allowfullscreen></iframe>
+            <div class="controls">
+                <button id="muteKick">🔊</button>
+                <input type="range" id="volumeKick" min="0" max="1" step="0.01" value="1">
+            </div>
+        </div>
         
         <div id="twitchPlayer">
             <iframe id="twitchIframe" src="https://player.twitch.tv/?channel=adamekl&parent=adameklive.github.io" frameborder="0" allowfullscreen></iframe>
@@ -68,6 +74,7 @@
                 <button id="shrink">➖</button>
                 <button id="expand">➕</button>
                 <button id="move">🔼</button>
+                <input type="range" id="volumeTwitch" min="0" max="1" step="0.01" value="1">
             </div>
         </div>
     </div>
@@ -77,28 +84,78 @@
     <script>
         const twitchPlayer = document.getElementById('twitchPlayer');
         const twitchIframe = document.getElementById('twitchIframe');
-        const controls = document.querySelector('.controls');
+        const controlsTwitch = document.querySelector('#twitchPlayer .controls');
+        const volumeTwitch = document.getElementById('volumeTwitch');
+        
+        const kickPlayerWrapper = document.getElementById('kickPlayerWrapper');
+        const kickPlayer = document.getElementById('kickPlayer');
+        const controlsKick = document.querySelector('#kickPlayerWrapper .controls');
+        const muteKick = document.getElementById('muteKick');
+        const volumeKick = document.getElementById('volumeKick');
+        
+        // Funkcje kontrolujące głośność
+        volumeTwitch.addEventListener('input', () => {
+            const volume = volumeTwitch.value;
+            twitchIframe.contentWindow.postMessage({ type: 'volume', value: volume }, '*');
+        });
+
+        muteKick.addEventListener('click', () => {
+            const currentVolume = volumeKick.value;
+            if (currentVolume > 0) {
+                volumeKick.value = 0;
+                kickPlayer.contentWindow.postMessage({ type: 'volume', value: 0 }, '*');
+                muteKick.innerText = '🔇';
+            } else {
+                volumeKick.value = 1;
+                kickPlayer.contentWindow.postMessage({ type: 'volume', value: 1 }, '*');
+                muteKick.innerText = '🔊';
+            }
+        });
+
+        volumeKick.addEventListener('input', () => {
+            const volume = volumeKick.value;
+            kickPlayer.contentWindow.postMessage({ type: 'volume', value: volume }, '*');
+        });
+
+        // Funkcje przycisków dla Twitch
+        let currentWidth = 854;
+        let currentHeight = 480;
+
+        document.getElementById('shrink').addEventListener('click', () => {
+            if (currentWidth > 427) {
+                currentWidth -= 85;
+                currentHeight = (currentWidth * 9) / 16;
+                twitchPlayer.style.width = `${currentWidth}px`;
+                twitchPlayer.style.height = `${Math.max(currentHeight, 160)}px`;
+            }
+        });
+
+        document.getElementById('expand').addEventListener('click', () => {
+            if (currentWidth < 854) {
+                currentWidth += 85;
+                currentHeight = (currentWidth * 9) / 16;
+                twitchPlayer.style.width = `${currentWidth}px`;
+                twitchPlayer.style.height = `${Math.min(currentHeight, 480)}px`;
+            }
+        });
+
+        // Przyciski przenoszenia Twitch Player
         let isMoving = false;
         let offsetX, offsetY;
 
-        // Przytrzymanie przycisku dla przenoszenia
         document.getElementById('move').addEventListener('mousedown', (e) => {
             isMoving = true;
             offsetX = e.clientX - twitchPlayer.offsetLeft;
             offsetY = e.clientY - twitchPlayer.offsetTop;
-            document.body.style.cursor = 'move'; // zmienia kursor na "move" podczas przenoszenia
+            document.body.style.cursor = 'move';
         });
 
         document.addEventListener('mousemove', (e) => {
             if (isMoving) {
                 let newLeft = e.clientX - offsetX;
                 let newTop = e.clientY - offsetY;
-
-                // Ograniczenie ruchu w poziomie
                 newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - twitchPlayer.offsetWidth));
-                // Ograniczenie ruchu w pionie
                 newTop = Math.max(0, Math.min(newTop, window.innerHeight - twitchPlayer.offsetHeight));
-
                 twitchPlayer.style.left = `${newLeft}px`;
                 twitchPlayer.style.top = `${newTop}px`;
             }
@@ -106,38 +163,24 @@
 
         document.addEventListener('mouseup', () => {
             isMoving = false;
-            document.body.style.cursor = 'default'; // Przywrócenie domyślnego kursora
+            document.body.style.cursor = 'default';
         });
 
-        let currentWidth = 854;
-        let currentHeight = 480;
-
-        document.getElementById('shrink').addEventListener('click', () => {
-            if (currentWidth > 427) {  // 50% szerokości 854px to 427px
-                currentWidth -= 85;  // Zmiana o 10% szerokości (85px)
-                currentHeight = (currentWidth * 9) / 16; // Proporcje 16:9
-                twitchPlayer.style.width = `${currentWidth}px`;
-                twitchPlayer.style.height = `${Math.max(currentHeight, 160)}px`;  // Minimalna wysokość 160px
-            }
-        });
-
-        document.getElementById('expand').addEventListener('click', () => {
-            if (currentWidth < 854) {  // Maksymalna szerokość to 854px
-                currentWidth += 85;  // Zmiana o 10% szerokości (85px)
-                currentHeight = (currentWidth * 9) / 16; // Proporcje 16:9
-                twitchPlayer.style.width = `${currentWidth}px`;
-                twitchPlayer.style.height = `${Math.min(currentHeight, 480)}px`;  // Maksymalna wysokość 480px
-            }
-        });
-
-        // Pokazuje przyciski, gdy kursor znajduje się na Twitch Playerze
+        // Pokazywanie przycisków kontrolnych
         twitchPlayer.addEventListener('mouseenter', () => {
-            controls.style.display = 'flex';
+            controlsTwitch.style.display = 'flex';
         });
 
-        // Ukrywa przyciski, gdy kursor opuści Twitch Playera
         twitchPlayer.addEventListener('mouseleave', () => {
-            controls.style.display = 'none';
+            controlsTwitch.style.display = 'none';
+        });
+
+        kickPlayerWrapper.addEventListener('mouseenter', () => {
+            controlsKick.style.display = 'flex';
+        });
+
+        kickPlayerWrapper.addEventListener('mouseleave', () => {
+            controlsKick.style.display = 'none';
         });
     </script>
 </body>
