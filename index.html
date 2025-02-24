@@ -5,66 +5,103 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Multistream</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { display: flex; height: 100vh; overflow: hidden; background: #000; }
-        #kick-container { flex: 1; position: relative; }
-        #kick-player { width: 100%; height: 100%; }
-        #twitch-player { 
-            position: absolute; top: 10px; left: 10px;
-            width: 40%; height: 40%;
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: black;
+            display: flex;
+        }
+        #container {
+            position: relative;
+            width: 80%;
+            height: 100vh;
+        }
+        #kickPlayer {
+            width: 100%;
+            height: 100%;
+        }
+        #twitchPlayer {
+            position: absolute;
+            width: 40%;
+            height: 40%;
+            top: 10px;
+            left: 10px;
             resize: both;
             overflow: hidden;
-            min-width: 20%; min-height: 20%;
-            max-width: 100%; max-height: 100%;
             border: 2px solid white;
-            cursor: grab;
         }
-        #twitch-chat { width: 350px; height: 100vh; border-left: 2px solid white; }
+        .controls {
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .controls button {
+            background: white;
+            border: none;
+            padding: 5px;
+            cursor: pointer;
+        }
+        #twitchPlayer:hover .controls {
+            display: flex;
+        }
+        #chat {
+            width: 20%;
+            height: 100vh;
+            border-left: 2px solid white;
+        }
     </style>
 </head>
 <body>
-    <div id="kick-container">
-        <iframe id="kick-player" src="https://player.kick.com/adamekl" frameborder="0" allowfullscreen></iframe>
-        <iframe id="twitch-player" src="https://player.twitch.tv/?channel=adamekl&parent=adameklive.github.io" frameborder="0" allowfullscreen></iframe>
+    <div id="container">
+        <iframe id="kickPlayer" src="https://kick.com/adamekl/embed" frameborder="0" allowfullscreen></iframe>
+        
+        <div id="twitchPlayer">
+            <iframe src="https://player.twitch.tv/?channel=adamekl&parent=adameklive.github.io" frameborder="0" allowfullscreen width="100%" height="100%"></iframe>
+            <div class="controls">
+                <button id="move">🔼</button>
+                <button id="shrink">➖</button>
+                <button id="expand">➕</button>
+            </div>
+        </div>
     </div>
-    <iframe id="twitch-chat" src="https://www.twitch.tv/embed/adamekl/chat?parent=adameklive.github.io" frameborder="0"></iframe>
+    
+    <iframe id="chat" src="https://www.twitch.tv/embed/adamekl/chat?parent=adameklive.github.io" frameborder="0"></iframe>
     
     <script>
-        let twitchPlayer = document.getElementById("twitch-player");
-        let isDragging = false, startX, startY, startLeft, startTop;
-        
-        twitchPlayer.addEventListener("mousedown", (e) => {
-            isDragging = true;
-            startX = e.clientX;
-            startY = e.clientY;
-            startLeft = twitchPlayer.offsetLeft;
-            startTop = twitchPlayer.offsetTop;
-            twitchPlayer.style.cursor = "grabbing";
+        const twitchPlayer = document.getElementById('twitchPlayer');
+        let isMoving = false;
+        let offsetX, offsetY;
+
+        document.getElementById('move').addEventListener('mousedown', (e) => {
+            isMoving = true;
+            offsetX = e.clientX - twitchPlayer.offsetLeft;
+            offsetY = e.clientY - twitchPlayer.offsetTop;
         });
-        
-        document.addEventListener("mousemove", (e) => {
-            if (!isDragging) return;
-            let newX = startLeft + (e.clientX - startX);
-            let newY = startTop + (e.clientY - startY);
-            twitchPlayer.style.left = `${newX}px`;
-            twitchPlayer.style.top = `${newY}px`;
-        });
-        
-        document.addEventListener("mouseup", () => {
-            isDragging = false;
-            twitchPlayer.style.cursor = "grab";
-        });
-        
-        // Zoomowanie Twitch Playera
-        document.addEventListener("wheel", (e) => {
-            let scale = e.deltaY > 0 ? 0.9 : 1.1;
-            let newWidth = twitchPlayer.offsetWidth * scale;
-            let newHeight = twitchPlayer.offsetHeight * scale;
-            
-            if (newWidth >= window.innerWidth * 0.2 && newWidth <= window.innerWidth * 0.5) {
-                twitchPlayer.style.width = `${newWidth}px`;
-                twitchPlayer.style.height = `${newHeight}px`;
+
+        document.addEventListener('mousemove', (e) => {
+            if (isMoving) {
+                twitchPlayer.style.left = `${e.clientX - offsetX}px`;
+                twitchPlayer.style.top = `${e.clientY - offsetY}px`;
             }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isMoving = false;
+        });
+
+        document.getElementById('shrink').addEventListener('click', () => {
+            twitchPlayer.style.width = "20%";
+            twitchPlayer.style.height = "20%";
+        });
+
+        document.getElementById('expand').addEventListener('click', () => {
+            twitchPlayer.style.width = "40%";
+            twitchPlayer.style.height = "40%";
         });
     </script>
 </body>
