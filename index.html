@@ -30,6 +30,7 @@
             top: 10px;
             left: 10px;
             border: 2px solid white;
+            cursor: grab;
         }
         .controls {
             position: absolute;
@@ -66,6 +67,7 @@
             <div class="controls">
                 <button id="shrink">➖</button>
                 <button id="expand">➕</button>
+                <button id="move">🔲</button>
             </div>
         </div>
     </div>
@@ -80,6 +82,9 @@
         let minHeight = 120;
         let maxWidth = 854;
         let maxHeight = 480;
+        
+        let isMoving = false;
+        let offsetX, offsetY;
 
         // Funkcja do zmiany rozmiaru
         function changeSize(delta) {
@@ -97,14 +102,49 @@
             twitchPlayer.style.height = `${newHeight}px`;
         }
 
+        // Przycisk do zmniejszania
         document.getElementById('shrink').addEventListener('click', () => {
             changeSize(-42); // Zmniejszenie o 10%
         });
 
+        // Przycisk do zwiększania
         document.getElementById('expand').addEventListener('click', () => {
             changeSize(42); // Zwiększenie o 10%
         });
 
+        // Funkcja do uruchomienia trybu przenoszenia
+        document.getElementById('move').addEventListener('mousedown', (e) => {
+            isMoving = true;
+            offsetX = e.clientX - twitchPlayer.offsetLeft;
+            offsetY = e.clientY - twitchPlayer.offsetTop;
+            document.body.style.cursor = 'grabbing';
+        });
+
+        // Ruchanie playera po ekranie
+        document.addEventListener('mousemove', (e) => {
+            if (isMoving) {
+                // Użycie requestAnimationFrame do zoptymalizowania ruchu
+                requestAnimationFrame(() => {
+                    let newLeft = e.clientX - offsetX;
+                    let newTop = e.clientY - offsetY;
+
+                    // Zapewnienie, że player nie wychodzi poza obszar okna
+                    newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - twitchPlayer.offsetWidth));
+                    newTop = Math.max(0, Math.min(newTop, window.innerHeight - twitchPlayer.offsetHeight));
+
+                    twitchPlayer.style.left = `${newLeft}px`;
+                    twitchPlayer.style.top = `${newTop}px`;
+                });
+            }
+        });
+
+        // Zakończenie trybu przenoszenia
+        document.addEventListener('mouseup', () => {
+            isMoving = false;
+            document.body.style.cursor = 'default';
+        });
+
+        // Pokazywanie przycisków, kiedy kursor jest nad playerem
         twitchPlayer.addEventListener('mouseenter', () => {
             controls.style.display = 'flex';
         });
