@@ -3,91 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MultiStream - Twitch & Kick</title>
+    <title>Multistream</title>
     <style>
         body {
-            margin: 0;
-            padding: 0;
-            background-color: #000;
             display: flex;
-            justify-content: center;
-            align-items: center;
             height: 100vh;
-            overflow: hidden;
+            margin: 0;
+            background-color: #0d1117;
         }
-        .container {
+        #container {
             display: flex;
-            width: 100%;
-            height: 100%;
+            flex-grow: 1;
+            position: relative;
         }
-        .main-stream {
-            width: 1480px;
-            height: 833px;
+        #kickPlayer {
+            flex-grow: 1;
+            position: relative;
         }
-        .sidebar {
-            width: 440px;
-            display: flex;
-            flex-direction: column;
+        #twitchOverlay {
+            position: absolute;
+            width: 400px;
+            height: 225px;
+            top: 10px;
+            left: 10px;
+            border: 2px solid white;
+            background: black;
+            cursor: move;
         }
-        iframe {
-            border: none;
-            display: block;
-        }
-        .twitch-player {
-            width: 440px;
-            height: 248px; /* Proporcjonalna wysokość dla 16:9 */
-        }
-        .twitch-chat {
-            width: 440px;
-            height: 833px;
+        #chat {
+            width: 400px;
+            height: 100vh;
+            border-left: 2px solid white;
         }
     </style>
 </head>
 <body>
-
-    <div class="container">
-        <!-- Kick Player (Główny) -->
-        <div class="main-stream">
-            <iframe src="https://player.kick.com/adamekl" width="1480" height="833" allowfullscreen></iframe>
+    <div id="container">
+        <div id="kickPlayer">
+            <iframe src="https://player.kick.com/adamekl" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>
+            <div id="twitchOverlay">
+                <iframe src="https://player.twitch.tv/?channel=adamekl&parent=adameklive.github.io" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>
+            </div>
         </div>
-
-        <!-- Twitch Player + Chat -->
-        <div class="sidebar">
-            <!-- Twitch Player (mniejszy, nad czatem) -->
-            <div class="twitch-player">
-                <iframe src="https://player.twitch.tv/?channel=adamekl&parent=adameklive.github.io" width="440" height="248" allowfullscreen></iframe>
-            </div>
-
-            <!-- Twitch Chat -->
-            <div class="twitch-chat">
-                <iframe class="twitch-chat-iframe" src="https://www.twitch.tv/embed/adamekl/chat?parent=adameklive.github.io" width="440" height="833"></iframe>
-            </div>
+        <div id="chat">
+            <iframe src="https://www.twitch.tv/embed/adamekl/chat?parent=adameklive.github.io" width="100%" height="100%" frameborder="0"></iframe>
         </div>
     </div>
-
     <script>
-        (function() {
-            const interval = setInterval(() => {
-                let twitchChatIframe = document.querySelector('.twitch-chat-iframe');
+        const twitchOverlay = document.getElementById('twitchOverlay');
+        let isDragging = false;
+        let offsetX, offsetY;
 
-                if (twitchChatIframe && twitchChatIframe.contentWindow && twitchChatIframe.contentDocument) {
-                    let chatWindow = twitchChatIframe.contentWindow.document;
-
-                    if (chatWindow.readyState === "complete") {
-                        console.log("Injecting 7TV script...");
-
-                        let script = chatWindow.createElement("script");
-                        script.src = "https://cdn.7tv.app/js/embed.js";
-                        script.async = true;
-
-                        chatWindow.head.appendChild(script);
-
-                        clearInterval(interval); // Zatrzymujemy sprawdzanie, gdy skrypt zostanie dodany
-                    }
-                }
-            }, 2000);
-        })();
+        twitchOverlay.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            offsetX = e.clientX - twitchOverlay.offsetLeft;
+            offsetY = e.clientY - twitchOverlay.offsetTop;
+        });
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            let x = e.clientX - offsetX;
+            let y = e.clientY - offsetY;
+            let maxX = document.getElementById('kickPlayer').clientWidth - twitchOverlay.clientWidth;
+            let maxY = document.getElementById('kickPlayer').clientHeight - twitchOverlay.clientHeight;
+            x = Math.max(0, Math.min(x, maxX));
+            y = Math.max(0, Math.min(y, maxY));
+            twitchOverlay.style.left = x + 'px';
+            twitchOverlay.style.top = y + 'px';
+        });
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
     </script>
-
 </body>
 </html>
