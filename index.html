@@ -11,6 +11,7 @@
             background-color: black;
             display: flex;
             justify-content: center;
+            height: 100vh;
         }
         #container {
             position: relative;
@@ -51,10 +52,15 @@
         #twitchPlayer:hover .controls {
             display: flex;
         }
-        #chat {
+        #chatContainer {
             width: 20%;
-            height: 100vh;
+            height: 100%;
+            position: relative;
             border-left: 2px solid white;
+            z-index: 1;
+        }
+        iframe {
+            border: none;
         }
     </style>
 </head>
@@ -72,9 +78,11 @@
         </div>
     </div>
     
-    <!-- Użyj widgetu czatu Twitch z obsługą BTTV/FFZ/7TV -->
-    <div id="chat"></div>
-    
+    <div id="chatContainer">
+        <!-- Czat z obsługą emotek 7TV, FFZ, BTTV -->
+        <iframe src="https://www.twitch.tv/embed/adamekl/chat?parent=adameklive.github.io&darkpopout=true" height="100%" width="100%"></iframe>
+    </div>
+
     <script src="https://embed.twitch.tv/embed/v1.js"></script>
     <script>
         const twitchPlayer = document.getElementById('twitchPlayer');
@@ -151,18 +159,6 @@
         twitchPlayer.addEventListener('mouseleave', () => {
             controls.style.display = 'none';
         });
-
-        // Inicjalizacja czatu Twitch z obsługą emotek 7TV/BTTV/FFZ
-        const options = {
-            channel: "adamekl", // Zmien na odpowiednią nazwę kanału
-            parent: ["adameklive.github.io"],
-            theme: "dark",
-            popup: false,
-            layout: "auto",
-            filters: ['7tv', 'ffz', 'bttv'], // Dodaj tutaj wsparcie dla 7tv/ffz/bttv
-        };
-
-        const embed = new Twitch.Embed("chat", options);
     </script>
 </body>
 </html>
