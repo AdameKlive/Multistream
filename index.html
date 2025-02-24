@@ -5,73 +5,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Multistream</title>
     <style>
-        body {
-            display: flex;
-            height: 100vh;
-            margin: 0;
-            background-color: #0d1117;
-        }
-        #container {
-            display: flex;
-            flex-grow: 1;
-            position: relative;
-        }
-        #kickPlayer {
-            flex-grow: 1;
-            position: relative;
-        }
-        #twitchOverlay {
-            position: absolute;
-            width: 400px;
-            height: 225px;
-            top: 10px;
-            left: 10px;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { display: flex; height: 100vh; overflow: hidden; background: #000; }
+        #kick-container { flex: 1; position: relative; }
+        #kick-player { width: 100%; height: 100%; }
+        #twitch-player { 
+            position: absolute; top: 10px; left: 10px;
+            width: 40%; height: 40%;
+            resize: both;
+            overflow: hidden;
+            min-width: 20%; min-height: 20%;
+            max-width: 100%; max-height: 100%;
             border: 2px solid white;
-            background: black;
-            cursor: move;
+            cursor: grab;
         }
-        #chat {
-            width: 400px;
-            height: 100vh;
-            border-left: 2px solid white;
-        }
+        #twitch-chat { width: 350px; height: 100vh; border-left: 2px solid white; }
     </style>
 </head>
 <body>
-    <div id="container">
-        <div id="kickPlayer">
-            <iframe src="https://player.kick.com/adamekl" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>
-            <div id="twitchOverlay">
-                <iframe src="https://player.twitch.tv/?channel=adamekl&parent=adameklive.github.io" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>
-            </div>
-        </div>
-        <div id="chat">
-            <iframe src="https://www.twitch.tv/embed/adamekl/chat?parent=adameklive.github.io" width="100%" height="100%" frameborder="0"></iframe>
-        </div>
+    <div id="kick-container">
+        <iframe id="kick-player" src="https://player.kick.com/adamekl" frameborder="0" allowfullscreen></iframe>
+        <iframe id="twitch-player" src="https://player.twitch.tv/?channel=adamekl&parent=adameklive.github.io" frameborder="0" allowfullscreen></iframe>
     </div>
+    <iframe id="twitch-chat" src="https://www.twitch.tv/embed/adamekl/chat?parent=adameklive.github.io" frameborder="0"></iframe>
+    
     <script>
-        const twitchOverlay = document.getElementById('twitchOverlay');
-        let isDragging = false;
-        let offsetX, offsetY;
-
-        twitchOverlay.addEventListener('mousedown', (e) => {
+        let twitchPlayer = document.getElementById("twitch-player");
+        let isDragging = false, startX, startY, startLeft, startTop;
+        
+        twitchPlayer.addEventListener("mousedown", (e) => {
             isDragging = true;
-            offsetX = e.clientX - twitchOverlay.offsetLeft;
-            offsetY = e.clientY - twitchOverlay.offsetTop;
+            startX = e.clientX;
+            startY = e.clientY;
+            startLeft = twitchPlayer.offsetLeft;
+            startTop = twitchPlayer.offsetTop;
+            twitchPlayer.style.cursor = "grabbing";
         });
-        document.addEventListener('mousemove', (e) => {
+        
+        document.addEventListener("mousemove", (e) => {
             if (!isDragging) return;
-            let x = e.clientX - offsetX;
-            let y = e.clientY - offsetY;
-            let maxX = document.getElementById('kickPlayer').clientWidth - twitchOverlay.clientWidth;
-            let maxY = document.getElementById('kickPlayer').clientHeight - twitchOverlay.clientHeight;
-            x = Math.max(0, Math.min(x, maxX));
-            y = Math.max(0, Math.min(y, maxY));
-            twitchOverlay.style.left = x + 'px';
-            twitchOverlay.style.top = y + 'px';
+            let newX = startLeft + (e.clientX - startX);
+            let newY = startTop + (e.clientY - startY);
+            twitchPlayer.style.left = `${newX}px`;
+            twitchPlayer.style.top = `${newY}px`;
         });
-        document.addEventListener('mouseup', () => {
+        
+        document.addEventListener("mouseup", () => {
             isDragging = false;
+            twitchPlayer.style.cursor = "grab";
+        });
+        
+        // Zoomowanie Twitch Playera
+        document.addEventListener("wheel", (e) => {
+            let scale = e.deltaY > 0 ? 0.9 : 1.1;
+            let newWidth = twitchPlayer.offsetWidth * scale;
+            let newHeight = twitchPlayer.offsetHeight * scale;
+            
+            if (newWidth >= window.innerWidth * 0.2 && newWidth <= window.innerWidth * 0.5) {
+                twitchPlayer.style.width = `${newWidth}px`;
+                twitchPlayer.style.height = `${newHeight}px`;
+            }
         });
     </script>
 </body>
