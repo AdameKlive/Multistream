@@ -19,91 +19,152 @@
             justify-content: space-between;
         }
         #kickPlayer {
-            width: 1533px;
-            height: calc(1533px * 9 / 16);
+            width: 1533px; /* Szerokość 1533px */
+            height: calc(1533px * 9 / 16); /* Wysokość dostosowana do proporcji 16:9 */
             background-color: black;
         }
         #twitchPlayer {
             position: absolute;
-            width: 427px;
-            height: 240px;
+            width: 427px; /* Początkowa szerokość 427px */
+            height: 240px; /* Początkowa wysokość 240px */
             top: 10px;
             left: 10px;
             border: 2px solid white;
             cursor: grab;
         }
+        .controls {
+            position: absolute;
+            bottom: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .controls button {
+            background: white;
+            border: none;
+            padding: 5px;
+            cursor: pointer;
+        }
+        #twitchPlayer:hover .controls {
+            display: flex;
+        }
         #chat {
             width: 20%;
             height: 100vh;
-            overflow-y: scroll;
             border-left: 2px solid white;
-            color: white;
-        }
-        .chat-message {
-            margin: 10px 0;
-        }
-        .chat-message img {
-            max-width: 25px;
-            max-height: 25px;
         }
     </style>
 </head>
 <body>
     <div id="container">
         <iframe id="kickPlayer" src="https://player.kick.com/adamekl" frameborder="0" allowfullscreen="true"></iframe>
+        
         <div id="twitchPlayer">
             <iframe src="https://player.twitch.tv/?channel=adamekl&parent=adameklive.github.io" frameborder="0" allowfullscreen width="100%" height="100%"></iframe>
+            <div class="controls">
+                <button id="shrink">➖</button>
+                <button id="expand">➕</button>
+                <button id="move">🔲</button>
+            </div>
         </div>
     </div>
     
-    <div id="chat"></div>
+    <iframe id="chat" src="https://www.twitch.tv/embed/adamekl/chat?parent=adameklive.github.io" frameborder="0" style="pointer-events: all;" sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-modals"></iframe>
+    
+    <!-- Skrypt 7TV -->
+    <script>
+        // Sprawdź, czy 7TV jest już załadowane w przeglądarce
+        if (typeof window.SevenTV !== 'undefined') {
+            // 7TV już załadowane, nic nie trzeba robić
+        } else {
+            // Załaduj skrypt 7TV dynamicznie
+            const script = document.createElement('script');
+            script.src = 'https://cdn.7tv.app/7tv.min.js'; // Możesz również sprawdzić inne źródło skryptu, jeśli to się zmienia
+            document.head.appendChild(script);
+        }
+    </script>
 
     <script>
-        const chatContainer = document.getElementById('chat');
-        const channelName = 'adamekl'; // Zmienna z nazwą kanału
-        const oauthToken = 'Bearer aslkulla29aq12o0r1uol0i6bto7zr'; // Uzyskany token OAuth
+        const twitchPlayer = document.getElementById('twitchPlayer');
+        const controls = document.querySelector('.controls');
 
-        // Zmienne WebSocket
-        const twitchWebSocket = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
+        let minWidth = 213;
+        let minHeight = 120;
+        let maxWidth = 854;
+        let maxHeight = 480;
         
-        twitchWebSocket.onopen = function() {
-            // Połączenie z Twitch IRC
-            twitchWebSocket.send('PASS ' + oauthToken);
-            twitchWebSocket.send('NICK justinfan12345'); // Przykładowy Nick użytkownika
-            twitchWebSocket.send('JOIN #' + channelName); // Dołącz do kanału
-        };
+        let isMoving = false;
+        let offsetX, offsetY;
 
-        // Odbieranie wiadomości czatu
-        twitchWebSocket.onmessage = function(event) {
-            const message = event.data;
+        // Funkcja do zmiany rozmiaru
+        function changeSize(delta) {
+            let currentWidth = twitchPlayer.offsetWidth;
+            let currentHeight = twitchPlayer.offsetHeight;
 
-            if (message.includes('PRIVMSG')) {
-                const messageContent = parseMessage(message);
-                displayMessage(messageContent);
+            let newWidth = currentWidth + delta;
+            let newHeight = (newWidth * 9) / 16; // Zgodność z proporcją 16:9
+
+            // Zapewnienie, że szerokość i wysokość mieszczą się w granicach
+            newWidth = Math.min(Math.max(newWidth, minWidth), maxWidth);
+            newHeight = Math.min(Math.max(newHeight, minHeight), maxHeight);
+
+            twitchPlayer.style.width = `${newWidth}px`;
+            twitchPlayer.style.height = `${newHeight}px`;
+        }
+
+        // Przycisk do zmniejszania
+        document.getElementById('shrink').addEventListener('click', () => {
+            changeSize(-42); // Zmniejszenie o 10%
+        });
+
+        // Przycisk do zwiększania
+        document.getElementById('expand').addEventListener('click', () => {
+            changeSize(42); // Zwiększenie o 10%
+        });
+
+        // Funkcja do uruchomienia trybu przenoszenia
+        document.getElementById('move').addEventListener('mousedown', (e) => {
+            isMoving = true;
+            offsetX = e.clientX - twitchPlayer.offsetLeft;
+            offsetY = e.clientY - twitchPlayer.offsetTop;
+            document.body.style.cursor = 'grabbing';
+        });
+
+        // Ruchanie playera po ekranie
+        document.addEventListener('mousemove', (e) => {
+            if (isMoving) {
+                // Użycie requestAnimationFrame do zoptymalizowania ruchu
+                requestAnimationFrame(() => {
+                    let newLeft = e.clientX - offsetX;
+                    let newTop = e.clientY - offsetY;
+
+                    // Zapewnienie, że player nie wychodzi poza obszar okna
+                    newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - twitchPlayer.offsetWidth));
+                    newTop = Math.max(0, Math.min(newTop, window.innerHeight - twitchPlayer.offsetHeight));
+
+                    twitchPlayer.style.left = `${newLeft}px`;
+                    twitchPlayer.style.top = `${newTop}px`;
+                });
             }
-        };
+        });
 
-        // Funkcja parsująca wiadomość
-        function parseMessage(message) {
-            const messageParts = message.split(' :');
-            const messageText = messageParts[1];
-            return messageText;
-        }
+        // Zakończenie trybu przenoszenia
+        document.addEventListener('mouseup', () => {
+            isMoving = false;
+            document.body.style.cursor = 'default';
+        });
 
-        // Funkcja do wyświetlania wiadomości na stronie
-        function displayMessage(messageText) {
-            const chatMessage = document.createElement('div');
-            chatMessage.classList.add('chat-message');
-            chatMessage.innerHTML = parseEmotes(messageText); // Funkcja do przetwarzania emotek
-            chatContainer.appendChild(chatMessage);
-        }
+        // Pokazywanie przycisków, kiedy kursor jest nad playerem
+        twitchPlayer.addEventListener('mouseenter', () => {
+            controls.style.display = 'flex';
+        });
 
-        // Funkcja do przetwarzania emotek (w tym 7TV)
-        function parseEmotes(messageText) {
-            // Przykład, jak dodać obsługę emotek, jeśli masz dostęp do API 7TV
-            messageText = messageText.replace(':7tv_emote:', '<img src="https://cdn.7tv.app/emote/abc123/1x" alt="7TV Emote">');
-            return messageText;
-        }
+        twitchPlayer.addEventListener('mouseleave', () => {
+            controls.style.display = 'none';
+        });
     </script>
 </body>
 </html>
