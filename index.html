@@ -39,7 +39,7 @@
             bottom: -35px; /* Ustawienie przycisków poniżej boxu */
             left: 50%;
             transform: translateX(-50%);
-            display: flex;
+            display: none; /* Początkowo ukryte */
             gap: 5px;
             background: rgba(0, 0, 0, 0.6);
             padding: 5px;
@@ -77,6 +77,7 @@
     <script>
         const twitchPlayer = document.getElementById('twitchPlayer');
         const twitchIframe = document.getElementById('twitchIframe');
+        const controls = document.querySelector('.controls');
         let isMoving = false;
         let offsetX, offsetY;
 
@@ -116,6 +117,16 @@
                 twitchPlayer.style.width = `${currentWidth}px`;
                 twitchPlayer.style.height = `${Math.min(currentHeight, 480)}px`;  // Maksymalna wysokość 480px
             }
+        });
+
+        // Pokazuje przyciski, gdy kursor znajduje się na Twitch Playerze
+        twitchPlayer.addEventListener('mouseenter', () => {
+            controls.style.display = 'flex';
+        });
+
+        // Ukrywa przyciski, gdy kursor opuści Twitch Playera
+        twitchPlayer.addEventListener('mouseleave', () => {
+            controls.style.display = 'none';
         });
     </script>
 </body>
