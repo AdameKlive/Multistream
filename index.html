@@ -18,7 +18,11 @@
         }
         #kickPlayer {
             width: 100%;
-            height: 100%;
+            height: auto;
+            max-width: 1280px;
+            max-height: 720px;
+            aspect-ratio: 16 / 9; /* Utrzymuje proporcje 16:9 */
+            background-color: black;
         }
         #twitchPlayer {
             position: absolute;
@@ -58,7 +62,7 @@
 </head>
 <body>
     <div id="container">
-        <iframe id="kickPlayer" src="https://kick.com/adamekl/embed" frameborder="0" allowfullscreen></iframe>
+        <iframe id="kickPlayer" src="https://player.kick.com/adamekl" frameborder="0" allowfullscreen="true"></iframe>
         
         <div id="twitchPlayer">
             <iframe src="https://player.twitch.tv/?channel=adamekl&parent=adameklive.github.io" frameborder="0" allowfullscreen width="100%" height="100%"></iframe>
