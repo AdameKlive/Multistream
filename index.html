@@ -4,31 +4,90 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MultiStream - Twitch & Kick</title>
-    <link rel="stylesheet" href="style.css"> <!-- Link do pliku CSS -->
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+        .main-stream {
+            width: 1480px;
+            height: 833px;
+        }
+        .sidebar {
+            width: 440px;
+            display: flex;
+            flex-direction: column;
+        }
+        iframe {
+            border: none;
+            display: block;
+        }
+        .twitch-player {
+            width: 440px;
+            height: 248px; /* Proporcjonalna wysokość dla 16:9 */
+        }
+        .twitch-chat {
+            width: 440px;
+            height: 833px;
+        }
+    </style>
 </head>
 <body>
 
     <div class="container">
         <!-- Kick Player (Główny) -->
         <div class="main-stream">
-            <iframe class="kick-player" src="https://player.kick.com/adamekl" allowfullscreen></iframe>
+            <iframe src="https://player.kick.com/adamekl" width="1480" height="833" allowfullscreen></iframe>
         </div>
 
         <!-- Twitch Player + Chat -->
         <div class="sidebar">
-            <!-- Twitch Player (nad czatem) -->
+            <!-- Twitch Player (mniejszy, nad czatem) -->
             <div class="twitch-player">
-                <iframe src="https://player.twitch.tv/?autoplay=false&channel=adamekl&parent=adameklive.github.io" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen"></iframe>
+                <iframe src="https://player.twitch.tv/?channel=adamekl&parent=adameklive.github.io" width="440" height="248" allowfullscreen></iframe>
             </div>
 
             <!-- Twitch Chat -->
             <div class="twitch-chat">
-                <iframe src="https://www.twitch.tv/embed/adamekl/chat?parent=adameklive.github.io" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen"></iframe>
+                <iframe class="twitch-chat-iframe" src="https://www.twitch.tv/embed/adamekl/chat?parent=adameklive.github.io" width="440" height="833"></iframe>
             </div>
         </div>
     </div>
 
-    <script src="script.js"></script> <!-- Link do pliku JavaScript (opcjonalnie) -->
+    <script>
+        (function() {
+            const interval = setInterval(() => {
+                let twitchChatIframe = document.querySelector('.twitch-chat-iframe');
+
+                if (twitchChatIframe && twitchChatIframe.contentWindow && twitchChatIframe.contentDocument) {
+                    let chatWindow = twitchChatIframe.contentWindow.document;
+
+                    if (chatWindow.readyState === "complete") {
+                        console.log("Injecting 7TV script...");
+
+                        let script = chatWindow.createElement("script");
+                        script.src = "https://cdn.7tv.app/js/embed.js";
+                        script.async = true;
+
+                        chatWindow.head.appendChild(script);
+
+                        clearInterval(interval); // Zatrzymujemy sprawdzanie, gdy skrypt zostanie dodany
+                    }
+                }
+            }, 2000);
+        })();
+    </script>
 
 </body>
 </html>
