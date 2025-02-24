@@ -25,16 +25,15 @@
         }
         #twitchPlayer {
             position: absolute;
-            width: 427px; /* Początkowa szerokość 427px */
-            height: 240px; /* Początkowa wysokość 240px */
+            width: 40%;
+            height: 40%;
             top: 10px;
             left: 10px;
             border: 2px solid white;
-            cursor: grab;
         }
         .controls {
             position: absolute;
-            bottom: -35px;
+            bottom: 5px;
             left: 50%;
             transform: translateX(-50%);
             display: none;
@@ -65,9 +64,9 @@
         <div id="twitchPlayer">
             <iframe src="https://player.twitch.tv/?channel=adamekl&parent=adameklive.github.io" frameborder="0" allowfullscreen width="100%" height="100%"></iframe>
             <div class="controls">
+                <button id="move">🔼</button>
                 <button id="shrink">➖</button>
                 <button id="expand">➕</button>
-                <button id="move">🔲</button>
             </div>
         </div>
     </div>
@@ -77,50 +76,17 @@
     <script>
         const twitchPlayer = document.getElementById('twitchPlayer');
         const controls = document.querySelector('.controls');
-
-        let minWidth = 213;
-        let minHeight = 120;
-        let maxWidth = 854;
-        let maxHeight = 480;
-        
         let isMoving = false;
         let offsetX, offsetY;
 
-        // Funkcja do zmiany rozmiaru
-        function changeSize(delta) {
-            let currentWidth = twitchPlayer.offsetWidth;
-            let currentHeight = twitchPlayer.offsetHeight;
-
-            let newWidth = currentWidth + delta;
-            let newHeight = (newWidth * 9) / 16; // Zgodność z proporcją 16:9
-
-            // Zapewnienie, że szerokość i wysokość mieszczą się w granicach
-            newWidth = Math.min(Math.max(newWidth, minWidth), maxWidth);
-            newHeight = Math.min(Math.max(newHeight, minHeight), maxHeight);
-
-            twitchPlayer.style.width = `${newWidth}px`;
-            twitchPlayer.style.height = `${newHeight}px`;
-        }
-
-        // Przycisk do zmniejszania
-        document.getElementById('shrink').addEventListener('click', () => {
-            changeSize(-42); // Zmniejszenie o 10%
-        });
-
-        // Przycisk do zwiększania
-        document.getElementById('expand').addEventListener('click', () => {
-            changeSize(42); // Zwiększenie o 10%
-        });
-
-        // Funkcja do uruchomienia trybu przenoszenia
+        // Zmieniamy sposób przenoszenia na trzymanie przycisku
         document.getElementById('move').addEventListener('mousedown', (e) => {
             isMoving = true;
             offsetX = e.clientX - twitchPlayer.offsetLeft;
             offsetY = e.clientY - twitchPlayer.offsetTop;
-            document.body.style.cursor = 'grabbing';
+            document.body.style.cursor = 'move';
         });
 
-        // Ruchanie playera po ekranie
         document.addEventListener('mousemove', (e) => {
             if (isMoving) {
                 // Użycie requestAnimationFrame do zoptymalizowania ruchu
@@ -138,13 +104,35 @@
             }
         });
 
-        // Zakończenie trybu przenoszenia
         document.addEventListener('mouseup', () => {
             isMoving = false;
             document.body.style.cursor = 'default';
         });
 
-        // Pokazywanie przycisków, kiedy kursor jest nad playerem
+        document.getElementById('shrink').addEventListener('click', () => {
+            let currentWidth = parseInt(twitchPlayer.style.width) || 40;
+            let currentHeight = parseInt(twitchPlayer.style.height) || 40;
+
+            if (currentWidth > 20) {
+                currentWidth -= 10;
+                currentHeight -= 10;
+                twitchPlayer.style.width = `${currentWidth}%`;
+                twitchPlayer.style.height = `${currentHeight}%`;
+            }
+        });
+
+        document.getElementById('expand').addEventListener('click', () => {
+            let currentWidth = parseInt(twitchPlayer.style.width) || 40;
+            let currentHeight = parseInt(twitchPlayer.style.height) || 40;
+
+            if (currentWidth < 40) {
+                currentWidth += 10;
+                currentHeight += 10;
+                twitchPlayer.style.width = `${currentWidth}%`;
+                twitchPlayer.style.height = `${currentHeight}%`;
+            }
+        });
+
         twitchPlayer.addEventListener('mouseenter', () => {
             controls.style.display = 'flex';
         });
