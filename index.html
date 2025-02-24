@@ -22,13 +22,10 @@
         }
         #twitchPlayer {
             position: absolute;
-            width: 40%;
-            max-width: 40%;
-            height: auto;
+            width: 854px;  /* Max szerokość */
+            height: 480px; /* Max wysokość */
             top: 10px;
             left: 10px;
-            max-height: 320px;
-            min-height: 160px;
             border: 2px solid white;
             display: flex;
             flex-direction: column;
@@ -100,23 +97,24 @@
             isMoving = false;
         });
 
-        let currentSize = 40;
+        let currentWidth = 854;
+        let currentHeight = 480;
 
         document.getElementById('shrink').addEventListener('click', () => {
-            if (currentSize > 50) {
-                currentSize -= 10;
-                twitchPlayer.style.width = `${currentSize}%`;
-                const newHeight = (currentSize * 9) / 16;
-                twitchPlayer.style.height = `${Math.max(newHeight, 160)}px`;  // Zabezpieczenie minimalnej wysokości 160px
+            if (currentWidth > 427) {  // 50% szerokości 854px to 427px
+                currentWidth -= 85;  // Zmiana o 10% szerokości (85px)
+                currentHeight = (currentWidth * 9) / 16; // Proporcje 16:9
+                twitchPlayer.style.width = `${currentWidth}px`;
+                twitchPlayer.style.height = `${Math.max(currentHeight, 160)}px`;  // Minimalna wysokość 160px
             }
         });
 
         document.getElementById('expand').addEventListener('click', () => {
-            if (currentSize < 100) {
-                currentSize += 10;
-                twitchPlayer.style.width = `${currentSize}%`;
-                const newHeight = (currentSize * 9) / 16;
-                twitchPlayer.style.height = `${Math.min(newHeight, 320)}px`;  // Zabezpieczenie maksymalnej wysokości 320px
+            if (currentWidth < 854) {  // Maksymalna szerokość to 854px
+                currentWidth += 85;  // Zmiana o 10% szerokości (85px)
+                currentHeight = (currentWidth * 9) / 16; // Proporcje 16:9
+                twitchPlayer.style.width = `${currentWidth}px`;
+                twitchPlayer.style.height = `${Math.min(currentHeight, 480)}px`;  // Maksymalna wysokość 480px
             }
         });
     </script>
