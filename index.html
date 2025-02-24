@@ -11,7 +11,6 @@
             background-color: black;
             display: flex;
             justify-content: center;
-            height: 100vh;
         }
         #container {
             position: relative;
@@ -20,14 +19,14 @@
             justify-content: space-between;
         }
         #kickPlayer {
-            width: 1533px;
-            height: calc(1533px * 9 / 16);
+            width: 1533px; /* Szerokość 1533px */
+            height: calc(1533px * 9 / 16); /* Wysokość dostosowana do proporcji 16:9 */
             background-color: black;
         }
         #twitchPlayer {
             position: absolute;
-            width: 427px;
-            height: 240px;
+            width: 427px; /* Początkowa szerokość 427px */
+            height: 240px; /* Początkowa wysokość 240px */
             top: 10px;
             left: 10px;
             border: 2px solid white;
@@ -52,15 +51,10 @@
         #twitchPlayer:hover .controls {
             display: flex;
         }
-        #chatContainer {
+        #chat {
             width: 20%;
-            height: 100%;
-            position: relative;
+            height: 100vh;
             border-left: 2px solid white;
-            z-index: 1;
-        }
-        iframe {
-            border: none;
         }
     </style>
 </head>
@@ -78,12 +72,21 @@
         </div>
     </div>
     
-    <div id="chatContainer">
-        <!-- Czat z obsługą emotek 7TV, FFZ, BTTV -->
-        <iframe src="https://www.twitch.tv/embed/adamekl/chat?parent=adameklive.github.io&darkpopout=true" height="100%" width="100%"></iframe>
-    </div>
+    <iframe id="chat" src="https://www.twitch.tv/embed/adamekl/chat?parent=adameklive.github.io" frameborder="0" style="pointer-events: all;" sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-modals"></iframe>
+    
+    <!-- Skrypt 7TV -->
+    <script>
+        // Sprawdź, czy 7TV jest już załadowane w przeglądarce
+        if (typeof window.SevenTV !== 'undefined') {
+            // 7TV już załadowane, nic nie trzeba robić
+        } else {
+            // Załaduj skrypt 7TV dynamicznie
+            const script = document.createElement('script');
+            script.src = 'https://cdn.7tv.app/7tv.min.js'; // Możesz również sprawdzić inne źródło skryptu, jeśli to się zmienia
+            document.head.appendChild(script);
+        }
+    </script>
 
-    <script src="https://embed.twitch.tv/embed/v1.js"></script>
     <script>
         const twitchPlayer = document.getElementById('twitchPlayer');
         const controls = document.querySelector('.controls');
@@ -102,8 +105,9 @@
             let currentHeight = twitchPlayer.offsetHeight;
 
             let newWidth = currentWidth + delta;
-            let newHeight = (newWidth * 9) / 16;
+            let newHeight = (newWidth * 9) / 16; // Zgodność z proporcją 16:9
 
+            // Zapewnienie, że szerokość i wysokość mieszczą się w granicach
             newWidth = Math.min(Math.max(newWidth, minWidth), maxWidth);
             newHeight = Math.min(Math.max(newHeight, minHeight), maxHeight);
 
@@ -113,52 +117,8 @@
 
         // Przycisk do zmniejszania
         document.getElementById('shrink').addEventListener('click', () => {
-            changeSize(-42); 
+            changeSize(-42); // Zmniejszenie o 10%
         });
 
         // Przycisk do zwiększania
-        document.getElementById('expand').addEventListener('click', () => {
-            changeSize(42); 
-        });
-
-        // Funkcja do uruchomienia trybu przenoszenia
-        document.getElementById('move').addEventListener('mousedown', (e) => {
-            isMoving = true;
-            offsetX = e.clientX - twitchPlayer.offsetLeft;
-            offsetY = e.clientY - twitchPlayer.offsetTop;
-            document.body.style.cursor = 'grabbing';
-        });
-
-        // Ruchanie playera po ekranie
-        document.addEventListener('mousemove', (e) => {
-            if (isMoving) {
-                requestAnimationFrame(() => {
-                    let newLeft = e.clientX - offsetX;
-                    let newTop = e.clientY - offsetY;
-
-                    newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - twitchPlayer.offsetWidth));
-                    newTop = Math.max(0, Math.min(newTop, window.innerHeight - twitchPlayer.offsetHeight));
-
-                    twitchPlayer.style.left = `${newLeft}px`;
-                    twitchPlayer.style.top = `${newTop}px`;
-                });
-            }
-        });
-
-        // Zakończenie trybu przenoszenia
-        document.addEventListener('mouseup', () => {
-            isMoving = false;
-            document.body.style.cursor = 'default';
-        });
-
-        // Pokazywanie przycisków, kiedy kursor jest nad playerem
-        twitchPlayer.addEventListener('mouseenter', () => {
-            controls.style.display = 'flex';
-        });
-
-        twitchPlayer.addEventListener('mouseleave', () => {
-            controls.style.display = 'none';
-        });
-    </script>
-</body>
-</html>
+        document.getElementById('expand').addEventListen
