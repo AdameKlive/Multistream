@@ -10,18 +10,17 @@
             overflow: hidden;
             background-color: black;
             display: flex;
+            justify-content: center; /* Wyśrodkowanie elementów */
         }
         #container {
             position: relative;
             width: 80%;
-            height: 100vh;
+            display: flex;
+            justify-content: space-between;
         }
         #kickPlayer {
-            width: 100%;
-            height: auto;
-            max-width: 1280px;
-            max-height: 720px;
-            aspect-ratio: 16 / 9; /* Utrzymuje proporcje 16:9 */
+            width: 1533px; /* Szerokość 1533px */
+            height: calc(1533px * 9 / 16); /* Wysokość dostosowana do proporcji 16:9 */
             background-color: black;
         }
         #twitchPlayer {
