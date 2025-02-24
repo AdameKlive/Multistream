@@ -26,16 +26,21 @@
             height: 40%;
             top: 10px;
             left: 10px;
-            resize: both;
-            overflow: hidden;
             border: 2px solid white;
+            display: flex;
+            flex-direction: column;
+        }
+        #twitchIframe {
+            width: 100%;
+            height: 100%;
         }
         .controls {
             position: absolute;
             bottom: 5px;
             left: 50%;
             transform: translateX(-50%);
-            display: none;
+            display: flex;
+            gap: 5px;
             background: rgba(0, 0, 0, 0.6);
             padding: 5px;
             border-radius: 5px;
@@ -45,9 +50,6 @@
             border: none;
             padding: 5px;
             cursor: pointer;
-        }
-        #twitchPlayer:hover .controls {
-            display: flex;
         }
         #chat {
             width: 20%;
@@ -61,19 +63,20 @@
         <iframe id="kickPlayer" src="https://kick.com/adamekl/embed" frameborder="0" allowfullscreen></iframe>
         
         <div id="twitchPlayer">
-            <iframe src="https://player.twitch.tv/?channel=adamekl&parent=adameklive.github.io" frameborder="0" allowfullscreen width="100%" height="100%"></iframe>
+            <iframe id="twitchIframe" src="https://player.twitch.tv/?channel=adamekl&parent=adameklive.github.io" frameborder="0" allowfullscreen></iframe>
             <div class="controls">
-                <button id="move">🔼</button>
                 <button id="shrink">➖</button>
                 <button id="expand">➕</button>
+                <button id="move">🔼</button>
             </div>
         </div>
     </div>
     
-      <iframe id="chat" src="https://www.twitch.tv/embed/adamekl/chat?parent=adameklive.github.io" frameborder="0" style="pointer-events: all;" sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-modals"></iframe>
+    <iframe id="chat" src="https://www.twitch.tv/embed/adamekl/chat?parent=adameklive.github.io" frameborder="0" style="pointer-events: all;" sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-modals"></iframe>
     
     <script>
         const twitchPlayer = document.getElementById('twitchPlayer');
+        const twitchIframe = document.getElementById('twitchIframe');
         let isMoving = false;
         let offsetX, offsetY;
 
@@ -94,14 +97,22 @@
             isMoving = false;
         });
 
+        let currentSize = 40;
+
         document.getElementById('shrink').addEventListener('click', () => {
-            twitchPlayer.style.width = "20%";
-            twitchPlayer.style.height = "20%";
+            if (currentSize > 50) {
+                currentSize -= 10;
+                twitchPlayer.style.width = `${currentSize}%`;
+                twitchPlayer.style.height = `${currentSize}%`;
+            }
         });
 
         document.getElementById('expand').addEventListener('click', () => {
-            twitchPlayer.style.width = "40%";
-            twitchPlayer.style.height = "40%";
+            if (currentSize < 100) {
+                currentSize += 10;
+                twitchPlayer.style.width = `${currentSize}%`;
+                twitchPlayer.style.height = `${currentSize}%`;
+            }
         });
     </script>
 </body>
