@@ -57,8 +57,6 @@
             border-left: 2px solid white;
         }
     </style>
-    <!-- 7TV JS CDN -->
-    <script src="https://cdn.7tv.app/v2.2.0/7tv.min.js"></script>
 </head>
 <body>
     <div id="container">
@@ -74,8 +72,10 @@
         </div>
     </div>
     
-    <iframe id="chat" src="https://www.twitch.tv/embed/adamekl/chat?parent=adameklive.github.io" frameborder="0" style="pointer-events: all;" sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-modals"></iframe>
+    <!-- Użyj widgetu czatu Twitch z obsługą BTTV/FFZ/7TV -->
+    <div id="chat"></div>
     
+    <script src="https://embed.twitch.tv/embed/v1.js"></script>
     <script>
         const twitchPlayer = document.getElementById('twitchPlayer');
         const controls = document.querySelector('.controls');
@@ -152,14 +152,17 @@
             controls.style.display = 'none';
         });
 
-        // Funkcja do inicjalizacji 7TV emotek w czacie
-        const chatFrame = document.getElementById('chat');
-        chatFrame.onload = () => {
-            const chatDocument = chatFrame.contentDocument || chatFrame.contentWindow.document;
-            const script = chatDocument.createElement('script');
-            script.src = 'https://cdn.7tv.app/v2.2.0/7tv.min.js';
-            chatDocument.body.appendChild(script);
+        // Inicjalizacja czatu Twitch z obsługą emotek 7TV/BTTV/FFZ
+        const options = {
+            channel: "adamekl", // Zmien na odpowiednią nazwę kanału
+            parent: ["adameklive.github.io"],
+            theme: "dark",
+            popup: false,
+            layout: "auto",
+            filters: ['7tv', 'ffz', 'bttv'], // Dodaj tutaj wsparcie dla 7tv/ffz/bttv
         };
+
+        const embed = new Twitch.Embed("chat", options);
     </script>
 </body>
 </html>
