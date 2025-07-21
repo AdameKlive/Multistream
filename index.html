@@ -74,9 +74,7 @@
             left: 0;
             width: 100%;
             height: 100%; /* Upewniamy się, że iframe ma pełną wysokość kontenera */
-            z-index: 1; /* Warstwa dolna */
-            /* Zostawiamy pointer-events: auto; aby pole do pisania było klikalne */
-            /* sandbox może być, ale jeśli masz problemy z pisaniem, spróbuj go usunąć. */
+            z-index: 1; /* Zmieniamy z-index na niższy, żeby nasz czat był na wierzchu, ale nie kolidował z polem */
         }
 
         #customChatContainer {
@@ -84,15 +82,16 @@
             top: 0;
             left: 0;
             width: 100%;
-            /* WAŻNE: Zwiększamy wysokość i zmieniamy pointer-events */
-            height: calc(100% - 95px); /* ZMIENIONO Z 85px NA 95px (możesz spróbować 100px) */
-            z-index: 2; /* Na wierzchu */
+            /* WAŻNE: Zwiększamy wysokość, aby nie nachodzić na pole tekstowe Twitcha */
+            /* Zwiększono z 95px na 110px. Możesz próbować 100px, 105px, 115px, 120px */
+            height: calc(100% - 110px); /* KLUCZOWA ZMIANA */
+            z-index: 2; /* CustomChatContainer na wierzchu, ale nie zasłaniając dolnego paska */
             display: flex;
             flex-direction: column;
             background-color: #1a1a1a; /* Nieprzezroczyste tło, aby zakryć iframe pod spodem */
             padding: 10px;
             box-sizing: border-box;
-            pointer-events: none; /* KLUCZOWA ZMIANA: Pozwala na klikanie przez tę warstwę */
+            /* Usunięto pointer-events: none; bo nie nachodzimy już na pole tekstowe */
         }
 
         #chatMessages {
@@ -100,7 +99,7 @@
             overflow-y: auto;
             padding-right: 5px;
             word-wrap: break-word;
-            pointer-events: auto; /* KLUCZOWA ZMIANA: Tylko wiadomości są klikalne (dla przewijania) */
+            /* Usunięto pointer-events: auto; bo domyślne jest auto i nie potrzebujemy specjalnej reguły */
         }
         /* Ukrywamy input z custom chatu, bo używamy tego z iframe'a Twitcha */
         #chatInputContainer {
@@ -262,11 +261,6 @@
             }
         }
 
-        // UWAGA: Funkcje pobierające emotki KANAŁOWE zostały ZAKOMENTOWANE
-        // w celu diagnozy problemu z połączeniem TMI.js / Client ID.
-        // Po udanym połączeniu TMI.js, możesz je ODKOMENTOWAĆ.
-
-        /*
         async function fetchChannel7TvEmotes(twitchId) {
             if (!twitchId) return;
             try {
@@ -329,12 +323,8 @@
                 console.error(`Błąd podczas pobierania emotek FFZ dla kanału ${CHANNEL_NAME}:`, error);
             }
         }
-        */
 
         // --- Funkcja do pobierania Twitch ID kanału (potrzebne dla emotek kanałowych) ---
-        // Ta funkcja również jest ZAKOMENTOWANA, ponieważ zależy od Client ID i API Twitcha.
-        // ODKOMENTUJ ją, gdy podstawowe połączenie TMI.js zadziała.
-        /*
         async function getTwitchChannelId(channelName) {
             try {
                 // !!! TWOJE KLIENT ID WPROWADZONE PONIŻEJ !!!
@@ -356,7 +346,6 @@
                 return null;
             }
         }
-        */
 
         // --- Funkcja dodająca wiadomość do czatu ---
         function addChatMessage(username, message, color = '#FFFFFF', badges = {}) {
@@ -437,8 +426,6 @@
             addChatMessage('System', `Połączono z czatem Twitcha (${CHANNEL_NAME}).`);
             console.log(`Połączono z Twitch IRC: ${address}:${port}`);
 
-            // !!! ZAKOMENTOWANO POBIERANIE EMOTEK KANAŁOWYCH DLA DIAGNOSTYKI !!!
-            /*
             getTwitchChannelId(CHANNEL_NAME).then(twitchId => {
                 if (twitchId) {
                     fetchChannel7TvEmotes(twitchId);
@@ -446,7 +433,6 @@
                     fetchChannelFfzEmotes(twitchId);
                 }
             });
-            */
         });
 
         // Nasłuchiwanie wiadomości czatu
@@ -472,7 +458,6 @@
         });
 
         // --- Inicjalizacja pobierania emotek globalnych przy starcie strony ---
-        // Globalne emotki NIE są zależne od Client ID, więc powinny działać niezależnie.
         fetchGlobal7TvEmotes();
         fetchGlobalBttvEmotes();
         // Globalne emotki FFZ nie są obsługiwane przez API v1, tylko kanałowe są łatwo dostępne.
