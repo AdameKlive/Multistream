@@ -125,21 +125,6 @@
             width: auto;
             margin-right: 3px;
         }
-        /* Ten styl jest teraz zbędny, ponieważ usuwamy element #twitchLoginInfo */
-        /*
-        #twitchLoginInfo {
-            display: block;
-            width: 90%;
-            padding: 10px;
-            margin: 10px auto;
-            background-color: #333;
-            color: #ccc;
-            border: 1px solid #555;
-            border-radius: 5px;
-            text-align: center;
-            font-size: 12px;
-        }
-        */
     </style>
 </head>
 <body>
@@ -163,7 +148,7 @@
             <div id="chatMessages">
                 <div class="chat-message"><span class="username" style="color:#FFF;">System:</span> Łączenie z czatem...</div>
             </div>
-            </div>
+        </div>
     </div>
 
     <script src="https://unpkg.com/tmi.js@1.8.5/tmi.min.js"></script>
@@ -237,7 +222,6 @@
 
         // --- Logika dla customowego czatu (bez serwera) ---
         const chatMessages = document.getElementById('chatMessages');
-        // Usunięto: const twitchLoginInfo = document.getElementById('twitchLoginInfo'); // Ten element jest teraz usunięty z HTML
 
         const CHANNEL_NAME = 'adamekl'; // Kanał Twitcha, który chcesz obserwować
 
@@ -344,14 +328,8 @@
         // --- Funkcja do pobierania Twitch ID kanału (potrzebne dla emotek kanałowych) ---
         async function getTwitchChannelId(channelName) {
             try {
-                // !!! WAŻNE: ZASTĄP 'YOUR_TWITCH_CLIENT_ID' SWOIM PRAWDZIWYM CLIENT ID Z KONSOLI TWITCH DEVELOPERS !!!
-                // https://dev.twitch.tv/console/apps
-                const CLIENT_ID = 'YOUR_TWITCH_CLIENT_ID';
-
-                if (CLIENT_ID === 'YOUR_TWITCH_CLIENT_ID') {
-                    console.warn('!!! WAŻNE: Używasz domyślnego CLIENT_ID. Zastąp go swoim Client ID Twitcha, aby poprawnie pobierać emotki kanałowe 7TV/BTTV/FFZ! Bez tego będą działać tylko globalne emotki.');
-                    return null;
-                }
+                // !!! TWOJE KLIENT ID WPROWADZONE PONIŻEJ !!!
+                const CLIENT_ID = 'xwsp0n38vqfrc8oh2w6eoaopun1sbg';
 
                 const response = await fetch(`https://api.twitch.tv/helix/users?login=${channelName}`, {
                     headers: {
