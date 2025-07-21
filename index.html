@@ -8,24 +8,40 @@
     <style>
         body {
             margin: 0;
-            overflow: hidden;
+            overflow-x: hidden; 
             background-color: black;
             display: flex;
             justify-content: center;
             font-family: Arial, sans-serif;
             color: white;
+            height: 100vh; /* Wypełnij całą wysokość widokową */
         }
-        #container {
-            position: relative;
-            width: 80%; /* Szerokość dla odtwarzaczy */
+
+        #globalContainer { /* Nowy kontener nadrzędny, który będzie zarządzał layoutem */
+            display: flex; /* Używamy flexboxa */
+            width: 100%; /* Zajmuje całą szerokość body */
+            height: 100%; /* Zajmuje całą wysokość body */
+            justify-content: space-between; /* Rozmieść playery i czat */
+            align-items: flex-start; /* Dopasuj do góry */
+        }
+
+        #mainContent { /* Kontener dla playerów */
+            flex-grow: 1; /* Pozwól mu rosnąć, zajmując dostępną przestrzeń */
             display: flex;
-            justify-content: space-between;
+            flex-direction: column; /* Playery jeden pod drugim */
+            position: relative; /* Dla pozycjonowania twitchPlayer */
+            padding: 10px; /* Mały padding, jeśli chcesz */
+            box-sizing: border-box; /* padding wliczony w szerokość */
+            width: 80%; /* Początkowa szerokość względna, ale flex-grow to główna siła */
         }
+
         #kickPlayer {
-            width: 1533px; /* Zgodnie z Twoim obecnym ustawieniem */
-            height: calc(1533px * 9 / 16);
+            width: 100%; /* Wypełnij dostępną szerokość mainContent */
+            height: calc(100vw * 9 / 16 * 0.8); /* Proporcje Kicka (odniesienie do globalnej szerokości) - to może wymagać dostosowania */
+            max-height: 80vh; /* Ogranicz maksymalną wysokość, żeby nie był za duży */
             background-color: black;
         }
+
         #twitchPlayer {
             position: absolute;
             width: 427px;
@@ -34,8 +50,8 @@
             left: 10px;
             border: 2px solid white;
             cursor: grab;
-            z-index: 100; /* Najwyższy z-index, aby player był zawsze na wierzchu */
-            transition: left 0.3s ease, top 0.3s ease, width 0.3s ease, height 0.3s ease; /* Płynne animacje dla przenoszenia */
+            z-index: 100; 
+            transition: left 0.3s ease, top 0.3s ease, width 0.3s ease, height 0.3s ease;
         }
         .controls {
             position: absolute;
@@ -60,96 +76,156 @@
             display: flex;
         }
 
-        /* === Sekcja czatu Twitcha === */
-        #chatWrapper {
-            width: 20%; /* Szerokość całej sekcji czatu */
+        /* === Sekcja czatu Twitcha - CHATSIDEBAR === */
+        #chatSidebar { /* Nowy kontener dla czatu */
+            display: flex;
+            flex-direction: column; /* Ułóż przycisk i iframe pionowo */
+            width: 350px; /* Początkowa szerokość czatu */
+            min-width: 50px; /* Minimalna szerokość, gdy schowany (na przycisk) */
             height: 100vh;
             border-left: 2px solid white;
-            position: relative; 
-            overflow: hidden;
             background-color: #1a1a1a;
-            display: flex; 
-            flex-direction: column; 
+            transition: width 0.3s ease; /* Płynna animacja szerokości */
+            overflow: hidden; /* Ukryj scrollbar, gdy czat jest schowany */
         }
-        
-        /* Klasa do ukrywania czatu */
-        #chatWrapper.hidden {
-            width: 50px; 
+
+        #chatSidebar.hidden {
+            width: 50px; /* Schowana szerokość, tylko na przycisk */
         }
 
         #twitchChatIframe { 
-            position: relative; 
-            flex-grow: 1; 
+            flex-grow: 1; /* Wypełnia dostępną przestrzeń */
             width: 100%;
             border: none;
         }
 
-        /* Styl dla kontrolek czatu (przycisku ukrywania) */
-        .chat-controls {
-            position: absolute; 
-            top: 5px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10; 
-            white-space: nowrap;
-            display: flex; 
-            gap: 5px; 
+        /* Przyciski do ukrywania/pokazywania czatu */
+        .chat-toggle-buttons {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 5px;
+            background-color: #2a2a2a; /* Lekko ciemniejsze tło dla paska przycisku */
+            flex-shrink: 0; /* Nie pozwól, aby ten element się skurczył */
+            height: 40px; /* Wysokość paska z przyciskiem */
         }
-        .chat-controls button {
-            background: white;
+
+        .chat-toggle-buttons button {
+            background: rgba(255, 255, 255, 0.2); /* Przezroczyste tło dla przycisku */
+            color: white;
             border: none;
             padding: 5px 10px;
             cursor: pointer;
             border-radius: 3px;
-            font-size: 0.8em;
+            font-size: 1.2em;
+            line-height: 1;
+            transition: background-color 0.2s ease;
         }
 
-        /* Ukryj iframe czatu, gdy chatWrapper jest ukryty */
-        #chatWrapper.hidden #twitchChatIframe {
+        .chat-toggle-buttons button:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Ukryj iframe czatu, gdy czat jest schowany */
+        #chatSidebar.hidden #twitchChatIframe {
+            display: none; /* Ukryj iframe czatu */
+        }
+        /* Ukryj przycisk "<<" gdy czat jest schowany */
+        #chatToggleButtonHide {
             display: none;
+        }
+        /* Pokaż przycisk ">>" gdy czat jest schowany */
+        #chatSidebar.hidden #chatToggleButtonShow {
+            display: block; /* Pokaż strzałkę w prawo, gdy czat jest ukryty */
+        }
+        /* Ukryj przycisk ">>" gdy czat jest widoczny */
+        #chatToggleButtonShow {
+            display: none;
+        }
+        /* Pokaż przycisk "<<" gdy czat jest widoczny */
+        #chatSidebar:not(.hidden) #chatToggleButtonHide {
+            display: block; /* Pokaż strzałkę w lewo, gdy czat jest widoczny */
+        }
+
+        /* Styl tooltipa dla przycisku wewnątrz sidebar */
+        .chat-toggle-buttons button .tooltip {
+            visibility: hidden;
+            width: 120px;
+            background-color: black;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 0;
+            position: absolute; /* Pozycjonowanie względem przycisku */
+            z-index: 1;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100%); /* Nad przyciskiem */
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.7em;
+            pointer-events: none; /* Upewnij się, że tooltip nie blokuje interakcji */
+            top: -10px; /* Odległość od przycisku */
+        }
+
+        .chat-toggle-buttons button:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
         }
     </style>
 </head>
 <body>
-    <div id="container">
-        <iframe id="kickPlayer" src="https://player.kick.com/imbotmundrol" frameborder="0" allowfullscreen="true"></iframe>
+    <div id="globalContainer"> <div id="mainContent"> 
+            <iframe id="kickPlayer" src="https://player.kick.com/imbotmundrol" frameborder="0" allowfullscreen="true"></iframe>
 
-        <div id="twitchPlayer">
-            <iframe src="https://player.twitch.tv/?channel=adamekl&parent=film.adameklive.pl" frameborder="0" allowfullscreen width="100%" height="100%"></iframe>
-            <div class="controls">
-                <button id="shrink" title="Zmniejsz player">➖</button>
-                <button id="expand" title="Powiększ player">➕</button>
-                <button id="move" title="Przeciągnij player">🔲</button>
-                <button id="toggleChatDock" title="Zadokuj/Odokuj player nad czatem">Dokuj</button>
+            <div id="twitchPlayer">
+                <iframe src="https://player.twitch.tv/?channel=adamekl&parent=film.adameklive.pl" frameborder="0" allowfullscreen width="100%" height="100%"></iframe>
+                <div class="controls">
+                    <button id="shrink" title="Zmniejsz player">➖</button>
+                    <button id="expand" title="Powiększ player">➕</button>
+                    <button id="move" title="Przeciągnij player">🔲</button>
+                    <button id="toggleChatDock" title="Zadokuj/Odokuj player nad czatem">Dokuj</button>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div id="chatWrapper">
-        <div class="chat-controls">
-            <button id="toggleChatVisibility" title="Ukryj/Pokaż cały czat">Ukryj Czat</button>
+        <div id="chatSidebar"> <div class="chat-toggle-buttons">
+                <button id="chatToggleButtonHide" title="Ukryj Czat">
+                    &laquo;<span class="tooltip">Ukryj Czat</span>
+                </button>
+                <button id="chatToggleButtonShow" title="Pokaż Czat">
+                    &raquo;<span class="tooltip">Pokaż Czat</span>
+                </button>
+            </div>
+            <iframe id="twitchChatIframe" src="https://www.twitch.tv/embed/adamekl/chat?parent=film.adameklive.pl" frameborder="0" allowfullscreen sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-modals"></iframe>
         </div>
-        <iframe id="twitchChatIframe" src="https://www.twitch.tv/embed/adamekl/chat?parent=film.adameklive.pl" frameborder="0" allowfullscreen sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-modals"></iframe>
     </div>
 
     <script>
         const twitchPlayer = document.getElementById('twitchPlayer');
         const controls = document.querySelector('.controls');
-        const chatWrapper = document.getElementById('chatWrapper');
+        const chatSidebar = document.getElementById('chatSidebar'); // Zmieniono na chatSidebar
         const twitchChatIframe = document.getElementById('twitchChatIframe');
+        const mainContent = document.getElementById('mainContent'); 
+
+        const chatToggleButtonHide = document.getElementById('chatToggleButtonHide');
+        const chatToggleButtonShow = document.getElementById('chatToggleButtonShow');
+
+
+        const CHAT_VISIBLE_WIDTH = 350; // Szerokość czatu gdy widoczny
+        const CHAT_HIDDEN_WIDTH = 50;  // Szerokość czatu gdy ukryty (na przycisk)
 
         let minWidth = 213;
         let minHeight = 120;
         let maxWidth = 854;
         let maxHeight = 480;
         
-        // Zapisz początkowe pozycje i rozmiary playera
         const initialPlayerLeft = twitchPlayer.offsetLeft;
         const initialPlayerTop = twitchPlayer.offsetTop;
         const initialPlayerWidth = twitchPlayer.offsetWidth;
         const initialPlayerHeight = twitchPlayer.offsetHeight;
 
-        let isPlayerDockedToChat = false; // Stan dokowania
+        let isPlayerDockedToChat = false; 
+        let isChatHidden = false; // Stan początkowy: czat widoczny
 
         function changeSize(delta) {
             let currentWidth = twitchPlayer.offsetWidth;
@@ -172,17 +248,15 @@
 
         let isMoving = false;
         let offsetX, offsetY;
-        let containerRect; // Zmienna do przechowywania wymiarów kontenera
+        let containerRect; 
 
-        // Optymalizacja: pobieramy offsety i wymiary kontenera tylko raz na początku przeciągania
         document.getElementById('move').addEventListener('mousedown', (e) => {
             isMoving = true;
-            // Oblicz offset względem playera, nie względem okna
             offsetX = e.clientX - twitchPlayer.getBoundingClientRect().left;
             offsetY = e.clientY - twitchPlayer.getBoundingClientRect().top;
             
-            // Pobierz wymiary kontenera raz
-            containerRect = document.getElementById('container').getBoundingClientRect();
+            // Pobierz wymiary kontenera (teraz mainContent) raz
+            containerRect = mainContent.getBoundingClientRect();
 
             document.body.style.cursor = 'grabbing';
             e.preventDefault();
@@ -192,20 +266,15 @@
             }
         });
 
-        // Optymalizacja: używamy position: fixed podczas przeciągania, aby uniknąć reflowów
-        // I używamy wartości bezwzględnych, a następnie konwertujemy z powrotem na względne
         document.addEventListener('mousemove', (e) => {
             if (isMoving) {
-                // Oblicz nowe pozycje globalne (względem okna)
                 let newGlobalLeft = e.clientX - offsetX;
                 let newGlobalTop = e.clientY - offsetY;
 
                 requestAnimationFrame(() => {
-                    // Ogranicz pozycje do granic kontenera
                     let boundedLeft = Math.max(containerRect.left, Math.min(newGlobalLeft, containerRect.right - twitchPlayer.offsetWidth));
                     let boundedTop = Math.max(containerRect.top, Math.min(newGlobalTop, containerRect.bottom - twitchPlayer.offsetHeight));
 
-                    // Ustawiamy pozycje względne do kontenera
                     twitchPlayer.style.left = `${boundedLeft - containerRect.left}px`;
                     twitchPlayer.style.top = `${boundedTop - containerRect.top}px`;
                 });
@@ -216,7 +285,6 @@
             if (isMoving) {
                 isMoving = false;
                 document.body.style.cursor = 'default';
-                // Resetujemy cached containerRect
                 containerRect = null;
             }
         });
@@ -235,11 +303,12 @@
         function dockPlayerToChat(forceRecalculate = false) {
             if (isPlayerDockedToChat && !forceRecalculate) return;
 
-            if (chatWrapper.classList.contains('hidden')) {
-                toggleChatVisibility(false); 
+            // Jeśli czat jest ukryty, pokaż go przed dokowaniem
+            if (isChatHidden) {
+                toggleChatVisibility(false); // Pokaż czat bez wywoływania listenera przycisku
             }
 
-            const chatRect = chatWrapper.getBoundingClientRect();
+            const chatRect = chatSidebar.getBoundingClientRect(); // Pobierz wymiary chatSidebar
             let playerWidthOnDock = chatRect.width; 
             
             twitchPlayer.style.width = `${playerWidthOnDock}px`;
@@ -247,12 +316,13 @@
             
             const playerHeightOnDock = twitchPlayer.offsetHeight; 
 
-            const containerRect = document.getElementById('container').getBoundingClientRect();
-            twitchPlayer.style.left = `${chatRect.left - containerRect.left}px`;
-            twitchPlayer.style.top = `${chatRect.top - containerRect.top}px`;
+            twitchPlayer.style.position = 'absolute'; // Pozostaw absolute w mainContent
+            twitchPlayer.style.left = `${chatRect.left - mainContent.getBoundingClientRect().left}px`; // Pozycja względem mainContent
+            twitchPlayer.style.top = `${chatRect.top - mainContent.getBoundingClientRect().top}px`; // Pozycja względem mainContent
 
             twitchChatIframe.style.height = `calc(100% - ${playerHeightOnDock}px)`;
-            twitchChatIframe.style.top = `${playerHeightOnDock}px`;
+            twitchChatIframe.style.top = `${playerHeightOnDock}px`; 
+            twitchChatIframe.style.position = 'relative'; // Upewnij się, że jest relatywny do sidebar
 
             isPlayerDockedToChat = true;
             toggleChatDockButton.textContent = 'Odeślij';
@@ -260,6 +330,7 @@
         }
 
         function undockPlayerFromChat() {
+            twitchPlayer.style.position = 'absolute'; 
             twitchPlayer.style.left = `${initialPlayerLeft}px`;
             twitchPlayer.style.top = `${initialPlayerTop}px`;
             twitchPlayer.style.width = `${initialPlayerWidth}px`;
@@ -267,6 +338,7 @@
 
             twitchChatIframe.style.height = `100%`;
             twitchChatIframe.style.top = `0px`;
+            twitchChatIframe.style.position = 'static'; // Przywróć na static/domyślny
 
             isPlayerDockedToChat = false;
             toggleChatDockButton.textContent = 'Dokuj';
@@ -282,24 +354,27 @@
             }
         });
 
-        // --- Funkcjonalność UKRYWANIA CZATU ---
-        const toggleChatVisibilityButton = document.getElementById('toggleChatVisibility');
-        
+        // --- Funkcjonalność UKRYWANIA/POKAZYWANIA CZATU Z ANIMACJĄ (jak Twitch) ---
         function toggleChatVisibility(fromButton = true) {
-            chatWrapper.classList.toggle('hidden');
-            if (chatWrapper.classList.contains('hidden')) {
-                toggleChatVisibilityButton.textContent = 'Pokaż Czat';
-                toggleChatVisibilityButton.title = 'Pokaż cały czat';
+            if (isChatHidden) { // Czat jest ukryty, więc go pokaż
+                chatSidebar.classList.remove('hidden');
+                isChatHidden = false;
+            } else { // Czat jest widoczny, więc go ukryj
+                chatSidebar.classList.add('hidden');
+                isChatHidden = true;
+                // Jeśli czat jest ukrywany, odokuj playera, jeśli był zadokowany
                 if (isPlayerDockedToChat) {
                     undockPlayerFromChat();
                 }
-            } else {
-                toggleChatVisibilityButton.textContent = 'Ukryj Czat';
-                toggleChatVisibilityButton.title = 'Ukryj cały czat';
             }
         }
 
-        toggleChatVisibilityButton.addEventListener('click', () => toggleChatVisibility(true));
+        chatToggleButtonHide.addEventListener('click', () => toggleChatVisibility(true));
+        chatToggleButtonShow.addEventListener('click', () => toggleChatVisibility(true));
+
+        // Inicjalizacja: upewnij się, że chatSidebar jest widoczny na początku
+        // i że poprawny przycisk jest widoczny.
+        // Domyślnie isChatHidden jest false, więc nic nie trzeba robić na start.
     </script>
 </body>
 </html>
