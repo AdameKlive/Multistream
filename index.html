@@ -65,38 +65,35 @@
             width: 20%; /* Szerokość całej sekcji czatu */
             height: 100vh;
             border-left: 2px solid white;
-            position: relative; /* Ważne dla pozycjonowania iframe czatu */
+            position: relative; 
             overflow: hidden;
             background-color: #1a1a1a;
-            display: flex; /* Użyj flexboxa do ułożenia przycisku i iframe */
-            flex-direction: column; /* Ułóż w kolumnie */
+            display: flex; 
+            flex-direction: column; 
         }
         
         /* Klasa do ukrywania czatu */
         #chatWrapper.hidden {
-            width: 50px; /* Minimalna szerokość, żeby przycisk był widoczny */
-            /* Możesz też ustawić display: none; jeśli chcesz całkowicie ukryć */
-            /* display: none; */ 
+            width: 50px; 
         }
 
         #twitchChatIframe { 
-            position: relative; /* Zmienione na relative */
-            flex-grow: 1; /* Pozwól mu rosnąć */
+            position: relative; 
+            flex-grow: 1; 
             width: 100%;
-            /* height: 100%; - usunięte, flex-grow to załatwi */
             border: none;
         }
 
         /* Styl dla kontrolek czatu (przycisku ukrywania) */
         .chat-controls {
-            position: absolute; /* Pozycjonowanie absolutne wewnątrz chatWrapper */
+            position: absolute; 
             top: 5px;
             left: 50%;
             transform: translateX(-50%);
-            z-index: 10; /* Upewnij się, że jest nad czatem */
+            z-index: 10; 
             white-space: nowrap;
-            display: flex; /* Aby przyciski były w linii */
-            gap: 5px; /* Odstęp między przyciskami */
+            display: flex; 
+            gap: 5px; 
         }
         .chat-controls button {
             background: white;
@@ -175,11 +172,18 @@
 
         let isMoving = false;
         let offsetX, offsetY;
+        let containerRect; // Zmienna do przechowywania wymiarów kontenera
 
+        // Optymalizacja: pobieramy offsety i wymiary kontenera tylko raz na początku przeciągania
         document.getElementById('move').addEventListener('mousedown', (e) => {
             isMoving = true;
-            offsetX = e.clientX - twitchPlayer.offsetLeft;
-            offsetY = e.clientY - twitchPlayer.offsetTop;
+            // Oblicz offset względem playera, nie względem okna
+            offsetX = e.clientX - twitchPlayer.getBoundingClientRect().left;
+            offsetY = e.clientY - twitchPlayer.getBoundingClientRect().top;
+            
+            // Pobierz wymiary kontenera raz
+            containerRect = document.getElementById('container').getBoundingClientRect();
+
             document.body.style.cursor = 'grabbing';
             e.preventDefault();
 
@@ -188,25 +192,33 @@
             }
         });
 
+        // Optymalizacja: używamy position: fixed podczas przeciągania, aby uniknąć reflowów
+        // I używamy wartości bezwzględnych, a następnie konwertujemy z powrotem na względne
         document.addEventListener('mousemove', (e) => {
             if (isMoving) {
+                // Oblicz nowe pozycje globalne (względem okna)
+                let newGlobalLeft = e.clientX - offsetX;
+                let newGlobalTop = e.clientY - offsetY;
+
                 requestAnimationFrame(() => {
-                    let newLeft = e.clientX - offsetX;
-                    let newTop = e.clientY - offsetY;
+                    // Ogranicz pozycje do granic kontenera
+                    let boundedLeft = Math.max(containerRect.left, Math.min(newGlobalLeft, containerRect.right - twitchPlayer.offsetWidth));
+                    let boundedTop = Math.max(containerRect.top, Math.min(newGlobalTop, containerRect.bottom - twitchPlayer.offsetHeight));
 
-                    const containerRect = document.getElementById('container').getBoundingClientRect();
-                    newLeft = Math.max(containerRect.left, Math.min(newLeft, containerRect.right - twitchPlayer.offsetWidth));
-                    newTop = Math.max(containerRect.top, Math.min(newTop, containerRect.bottom - twitchPlayer.offsetHeight));
-
-                    twitchPlayer.style.left = `${newLeft - containerRect.left}px`;
-                    twitchPlayer.style.top = `${newTop - containerRect.top}px`;
+                    // Ustawiamy pozycje względne do kontenera
+                    twitchPlayer.style.left = `${boundedLeft - containerRect.left}px`;
+                    twitchPlayer.style.top = `${boundedTop - containerRect.top}px`;
                 });
             }
         });
 
         document.addEventListener('mouseup', () => {
-            isMoving = false;
-            document.body.style.cursor = 'default';
+            if (isMoving) {
+                isMoving = false;
+                document.body.style.cursor = 'default';
+                // Resetujemy cached containerRect
+                containerRect = null;
+            }
         });
 
         twitchPlayer.addEventListener('mouseenter', () => {
@@ -223,9 +235,8 @@
         function dockPlayerToChat(forceRecalculate = false) {
             if (isPlayerDockedToChat && !forceRecalculate) return;
 
-            // Jeśli czat jest ukryty, najpierw go pokaż
             if (chatWrapper.classList.contains('hidden')) {
-                toggleChatVisibility(false); // Pokaż czat bez wywoływania listenera
+                toggleChatVisibility(false); 
             }
 
             const chatRect = chatWrapper.getBoundingClientRect();
@@ -279,7 +290,6 @@
             if (chatWrapper.classList.contains('hidden')) {
                 toggleChatVisibilityButton.textContent = 'Pokaż Czat';
                 toggleChatVisibilityButton.title = 'Pokaż cały czat';
-                // Jeśli czat jest ukrywany, odokuj playera, jeśli był zadokowany
                 if (isPlayerDockedToChat) {
                     undockPlayerFromChat();
                 }
