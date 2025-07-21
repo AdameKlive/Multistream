@@ -26,18 +26,18 @@
         }
 
         #mainContent { 
-            flex-grow: 1; 
+            flex-grow: 1; /* Upewnij się, że mainContent zajmuje całą dostępną przestrzeń */
             display: flex;
             flex-direction: column; 
             position: relative; 
             padding: 10px; 
             box-sizing: border-box; 
-            width: 80%; 
+            /* usunięto stałe width: 80%; - flex-grow lepiej to obsłuży */
         }
 
         #kickPlayer {
             width: 100%; 
-            height: 100%; 
+            height: 100%; /* Ustawione przez JS */
             background-color: black;
         }
 
@@ -49,7 +49,8 @@
             left: 10px;
             border: 2px solid white;
             z-index: 100; 
-            transition: top 0.3s ease, left 0.3s ease, width 0.3s ease, height 0.3s ease; 
+            transition: top 0.3s ease, left 0.3s ease, width 0.3s ease, height 0.3s ease, opacity 0.3s ease; /* Dodano opacity */
+            opacity: 1; /* Domyślnie widoczny */
         }
         .controls { display: none !important; }
 
@@ -61,9 +62,10 @@
             height: 100vh;
             border-left: 2px solid white;
             background-color: #1a1a1a;
-            transition: width 0.3s ease; /* Animacja chowania/pokazywania szerokości */
+            transition: width 0.3s ease; 
             overflow: hidden; 
             position: relative; 
+            flex-shrink: 0; /* Zapobiegnij kurczeniu się sidebara poniżej jego width */
         }
 
         #chatSidebar.hidden {
@@ -75,7 +77,7 @@
             display: flex;
             flex-direction: column;
             overflow: hidden; 
-            transition: opacity 0.3s ease; /* Tylko opacity, width będzie w chatSidebar */
+            transition: opacity 0.3s ease; 
         }
 
         #chatSidebar.hidden #chatIframeContainer {
@@ -90,12 +92,12 @@
 
         .chat-toggle-buttons { display: none !important; }
 
-        /* === NOWY GLOBALNY PRZYCISK OPCJI (ZĘBATKA) === */
+        /* === GLOBALNY PRZYCISK OPCJI (ZĘBATKA) === */
         #optionsToggleBtn {
             position: fixed;
             bottom: 20px;
             left: 20px;
-            background: transparent; /* Zmieniłem na transparent */
+            background: transparent; 
             color: white;
             border: 2px solid rgba(255, 255, 255, 0.3); 
             border-radius: 50%; 
@@ -107,14 +109,14 @@
             font-size: 2em;
             cursor: pointer;
             z-index: 200; 
-            transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.3s ease; /* Dodano opacity */
-            opacity: 0.5; /* Półprzezroczystość dla CAŁEGO PRZYCISKU */
+            transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.3s ease; 
+            opacity: 0.5; 
         }
 
         #optionsToggleBtn:hover {
-            background: rgba(255, 255, 255, 0.1); /* Delikatniejsze podświetlenie */
+            background: rgba(255, 255, 255, 0.1); 
             border-color: rgba(255, 255, 255, 0.5);
-            opacity: 1; /* Pełna widoczność na hover */
+            opacity: 1; 
         }
 
         /* === MENU OPCJI === */
@@ -171,9 +173,8 @@
             margin-bottom: 0;
         }
 
-        /* Dodatkowy styl dla nieaktywnych elementów */
         .disabled-button {
-            opacity: 0.5;
+            opacity: 0.5 !important; /* Ważne, żeby nadpisać hover */
             cursor: not-allowed !important;
         }
     </style>
@@ -212,7 +213,7 @@
 
         <div class="menu-group">
             <button id="toggleChatDock">Dokuj TTV nad czat</button>
-        </div>
+            <button id="hideDockedTwitchPlayer">Ukryj TTV (gdy zadokowany)</button> </div>
 
         <div class="menu-group">
             <button id="toggleChatVisibilityBtn">Ukryj/Pokaż Czat</button>
@@ -237,29 +238,28 @@
         const positionBottomLeftBtn = document.getElementById('positionBottomLeft');
         const positionBottomRightBtn = document.getElementById('positionBottomRight');
         const toggleChatDockBtn = document.getElementById('toggleChatDock');
+        const hideDockedTwitchPlayerBtn = document.getElementById('hideDockedTwitchPlayer'); // Nowy przycisk
         const toggleChatVisibilityBtn = document.getElementById('toggleChatVisibilityBtn');
         const toggleBrowserFullscreenBtn = document.getElementById('toggleBrowserFullscreen');
 
         const CHAT_VISIBLE_WIDTH = 350; 
-        const CHAT_MIN_WIDTH = 0; // Czat będzie całkowicie ukryty
+        const CHAT_MIN_WIDTH = 0; 
 
-        const ANIMATION_DURATION = 350; // Czas trwania animacji CSS w ms (0.3s CSS + zapas)
-        let isGlobalAnimating = false; // Nowa zmienna stanu globalnej animacji/zajętości
+        const ANIMATION_DURATION = 350; 
+        let isGlobalAnimating = false; 
 
         let minTwitchWidth = 213;
         let minTwitchHeight = 120;
         let maxTwitchWidth = 854;
         let maxTwitchHeight = 480;
         
-        // Domyślne/początkowe rozmiary Twitch Playera
         const defaultTwitchWidth = 427;
         const defaultTwitchHeight = 240;
 
         let isPlayerDockedToChat = false; 
         let isChatHidden = false; 
+        let isTwitchPlayerHiddenWhenDocked = false; // Nowa zmienna stanu
 
-        // Funkcja do dynamicznego dostosowywania rozmiaru playera Kicka
-        // Wywołuje się po każdej zmianie układu
         function adjustKickPlayerSize() {
             const mainContentRect = mainContent.getBoundingClientRect();
             const aspectRatio = 16 / 9; 
@@ -272,10 +272,8 @@
             kickPlayer.style.height = `${kickHeight}px`;
         }
 
-        // Funkcja do ustawiania stanu globalnej animacji/blokady
         function setGlobalAnimationState(state) {
             isGlobalAnimating = state;
-            // Opcjonalnie: Zablokuj wszystkie przyciski menu, gdy trwa animacja
             const allMenuButtons = optionsMenu.querySelectorAll('button');
             allMenuButtons.forEach(btn => {
                 if (state) {
@@ -286,7 +284,6 @@
                     btn.removeAttribute('disabled');
                 }
             });
-            // Zablokuj również przycisk zębatki
             if (state) {
                 optionsToggleBtn.classList.add('disabled-button');
                 optionsToggleBtn.setAttribute('disabled', 'true');
@@ -296,12 +293,11 @@
             }
         }
 
-
         // --- OBSŁUGA MENU OPCJI ---
         let isMenuOpen = false;
 
         function toggleOptionsMenu() {
-            if (isGlobalAnimating) return; // Nie otwieraj/zamykaj, jeśli trwa animacja
+            if (isGlobalAnimating) return; 
             isMenuOpen = !isMenuOpen;
             if (isMenuOpen) {
                 optionsMenu.classList.add('show');
@@ -322,10 +318,9 @@
         });
 
         // --- ZARZĄDZANIE PLAYEREM TTV (ROZMIAR I POZYCJA) ---
-        // Nowa, ujednolicona funkcja do zmiany rozmiaru I pozycji Twitch Playera
         function updateTwitchPlayer(newWidth = twitchPlayer.offsetWidth, newHeight = twitchPlayer.offsetHeight, newPosition = null) {
-            if (isGlobalAnimating) return; // Zablokuj, jeśli trwa inna operacja
-            setGlobalAnimationState(true); // Ustaw, że strona jest zajęta
+            if (isGlobalAnimating) return; 
+            setGlobalAnimationState(true); 
 
             // Obliczanie nowego rozmiaru
             let finalWidth = Math.min(Math.max(newWidth, minTwitchWidth), maxTwitchWidth);
@@ -335,6 +330,13 @@
             // Zastosuj nowy rozmiar
             twitchPlayer.style.width = `${finalWidth}px`;
             twitchPlayer.style.height = `${finalHeight}px`;
+
+            // Obsługa opacity (widoczności) Twitcha
+            if (newPosition !== 'docked' || !isTwitchPlayerHiddenWhenDocked) {
+                twitchPlayer.style.opacity = '1'; // Przywróć widoczność, chyba że ma być ukryty gdy zadokowany
+            } else if (newPosition === 'docked' && isTwitchPlayerHiddenWhenDocked) {
+                 twitchPlayer.style.opacity = '0'; // Ukryj, jeśli zadokowany i flaga jest ustawiona
+            }
 
             // Obliczanie nowej pozycji
             if (newPosition) {
@@ -360,13 +362,12 @@
                         targetLeft = kickPlayerRect.right - finalWidth - padding;
                         targetTop = kickPlayerRect.bottom - finalHeight - padding;
                         break;
-                    case 'docked': // Pozycja zadokowana
+                    case 'docked': 
                         const chatSidebarRect = chatSidebar.getBoundingClientRect(); 
                         targetLeft = chatSidebarRect.left; 
                         targetTop = chatSidebarRect.top;
                         break;
                     default:
-                        // Domyślna pozycja (np. obecna lub domyślna dla playerów)
                         // Użyj aktualnych pozycji, jeśli newPosition nie jest znane
                         const currentRect = twitchPlayer.getBoundingClientRect();
                         targetLeft = currentRect.left;
@@ -374,7 +375,6 @@
                         break;
                 }
 
-                // Konwersja pozycji globalnych na względne do mainContent
                 const mainContentRect = mainContent.getBoundingClientRect();
                 twitchPlayer.style.left = `${targetLeft - mainContentRect.left}px`;
                 twitchPlayer.style.top = `${targetTop - mainContentRect.top}px`;
@@ -384,30 +384,29 @@
             if (newPosition === 'docked') {
                 isPlayerDockedToChat = true;
                 toggleChatDockBtn.textContent = 'Odeślij TTV z czatu';
-                // Dostosuj iframe czatu, aby player był nad nim
                 const playerHeightOnDock = twitchPlayer.offsetHeight;
                 twitchChatIframe.style.height = `calc(100% - ${playerHeightOnDock}px)`;
                 twitchChatIframe.style.top = `${playerHeightOnDock}px`; 
                 twitchChatIframe.style.position = 'relative'; 
-            } else if (isPlayerDockedToChat) { // Jeśli player był dokowany, ale teraz nie jest
+            } else if (isPlayerDockedToChat && newPosition !== 'docked') { 
                 isPlayerDockedToChat = false;
                 toggleChatDockBtn.textContent = 'Dokuj TTV nad czat';
-                // Przywróć iframe czatu do pełnej wysokości
                 twitchChatIframe.style.height = `100%`;
                 twitchChatIframe.style.top = `0px`;
                 twitchChatIframe.style.position = 'static'; 
+                // Upewnij się, że opacity wraca do 1, jeśli nie jest zadokowany
+                twitchPlayer.style.opacity = '1';
+                isTwitchPlayerHiddenWhenDocked = false; // Resetuj stan ukrycia
             }
 
-            // Po zakończeniu wszystkich operacji i animacji:
             setTimeout(() => {
-                adjustKickPlayerSize(); // Dopasuj Kicka po zmianach Twitcha
-                setGlobalAnimationState(false); // Zwolnij blokadę
+                adjustKickPlayerSize(); 
+                setGlobalAnimationState(false); 
             }, ANIMATION_DURATION); 
 
-            toggleOptionsMenu(); // Zawsze zamykaj menu po akcji
+            toggleOptionsMenu(); 
         }
 
-        // Zmiana rozmiaru playera (delegowanie do updateTwitchPlayer)
         shrinkTwitchPlayerBtn.addEventListener('click', () => {
             if (isGlobalAnimating) return;
             updateTwitchPlayer(twitchPlayer.offsetWidth - 42);
@@ -417,7 +416,6 @@
             updateTwitchPlayer(twitchPlayer.offsetWidth + 42);
         });
 
-        // Predefiniowane pozycje playera (delegowanie do updateTwitchPlayer)
         positionTopLeftBtn.addEventListener('click', () => {
             if (isGlobalAnimating) return;
             updateTwitchPlayer(twitchPlayer.offsetWidth, twitchPlayer.offsetHeight, 'topLeft');
@@ -435,28 +433,58 @@
             updateTwitchPlayer(twitchPlayer.offsetWidth, twitchPlayer.offsetHeight, 'bottomRight');
         });
 
-        // --- Funkcjonalność DOCKOWANIA ---
+        // --- Funkcjonalność DOKOWANIA ---
         toggleChatDockBtn.addEventListener('click', () => {
             if (isGlobalAnimating) return;
 
             if (isPlayerDockedToChat) {
-                updateTwitchPlayer(defaultTwitchWidth, defaultTwitchHeight, 'topLeft'); // Odokuj i wróć do lewego górnego
+                updateTwitchPlayer(defaultTwitchWidth, defaultTwitchHeight, 'topLeft'); 
             } else {
-                // Przed dokowaniem, jeśli czat jest ukryty, najpierw go pokaż
                 if (isChatHidden) {
-                    toggleChatVisibility(false, () => { // Pokaż czat, a potem dokuj w callbacku
-                         updateTwitchPlayer(CHAT_VISIBLE_WIDTH, CHAT_VISIBLE_WIDTH * 9 / 16, 'docked');
-                    });
+                    toggleChatVisibility(true); // Pokaż czat jeśli ukryty (przycisk w menu)
+                    // Dokowanie zostanie wykonane w callbacku po zakończeniu animacji czatu
+                    // (chociaż tutaj nie używamy callbacku, to toggleChatVisibility odblokuje globalAnimating)
+                    // Musimy to zrobić w następnym cyklu zdarzeń po toggleChatVisibility zakończy animację
+                    setTimeout(() => {
+                        if (!isGlobalAnimating && !isChatHidden) { // Upewnij się, że czat jest widoczny i system wolny
+                            updateTwitchPlayer(CHAT_VISIBLE_WIDTH, CHAT_VISIBLE_WIDTH * 9 / 16, 'docked');
+                        }
+                    }, ANIMATION_DURATION + 50); // Daj trochę zapasu
                 } else {
                     updateTwitchPlayer(CHAT_VISIBLE_WIDTH, CHAT_VISIBLE_WIDTH * 9 / 16, 'docked');
                 }
             }
         });
 
+        // --- Ukrywanie zadokowanego Playera Twitcha ---
+        hideDockedTwitchPlayerBtn.addEventListener('click', () => {
+            if (isGlobalAnimating) return;
+            if (!isPlayerDockedToChat) {
+                alert('Player Twitcha musi być zadokowany, aby go ukryć.');
+                return;
+            }
+
+            setGlobalAnimationState(true);
+            if (isTwitchPlayerHiddenWhenDocked) {
+                twitchPlayer.style.opacity = '1';
+                hideDockedTwitchPlayerBtn.textContent = 'Ukryj TTV (gdy zadokowany)';
+            } else {
+                twitchPlayer.style.opacity = '0';
+                hideDockedTwitchPlayerBtn.textContent = 'Pokaż TTV (gdy zadokowany)';
+            }
+            isTwitchPlayerHiddenWhenDocked = !isTwitchPlayerHiddenWhenDocked;
+
+            setTimeout(() => {
+                setGlobalAnimationState(false);
+            }, ANIMATION_DURATION);
+            toggleOptionsMenu();
+        });
+
+
         // --- Funkcjonalność UKRYWANIA/POKAZYWANIA CZATU ---
-        // Callback jest używany, gdy inna funkcja (np. dokowanie) musi poczekać na zakończenie animacji czatu
-        function toggleChatVisibility(fromButton = true, callback = null) {
-            if (isGlobalAnimating && fromButton) return; // Zablokuj tylko, jeśli wywołane z przycisku, nie z wewnętrznej logiki
+        // Zmieniono callback na wywołanie funkcji dopiero po zakończeniu animacji toggleChatVisibility
+        function toggleChatVisibility(fromButton = true) {
+            if (isGlobalAnimating && fromButton) return;
             setGlobalAnimationState(true);
 
             if (isChatHidden) { 
@@ -465,16 +493,14 @@
             } else { 
                 chatSidebar.classList.add('hidden');
                 isChatHidden = true;
-                // Jeśli czat jest ukrywany, a player był zadokowany, odokuj go
                 if (isPlayerDockedToChat) {
-                    updateTwitchPlayer(defaultTwitchWidth, defaultTwitchHeight, 'topLeft'); // Odokuj
+                    updateTwitchPlayer(defaultTwitchWidth, defaultTwitchHeight, 'topLeft'); 
                 }
             }
             
             setTimeout(() => {
                 adjustKickPlayerSize(); 
                 setGlobalAnimationState(false);
-                if (callback) callback(); // Wywołaj callback po zakończeniu animacji
             }, ANIMATION_DURATION); 
 
             if (fromButton) toggleOptionsMenu(); 
@@ -490,13 +516,12 @@
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(err => {
                     console.error(`Błąd wejścia w tryb pełnoekranowy: ${err.message} (${err.name})`);
-                    setGlobalAnimationState(false); // Zwolnij blokadę w razie błędu
+                    setGlobalAnimationState(false); 
                 });
             } else {
                 document.exitFullscreen();
             }
             
-            // Event listener 'fullscreenchange' będzie obsługiwał adjustKickPlayerSize i zwolnienie blokady
             toggleOptionsMenu(); 
         }
 
@@ -509,23 +534,21 @@
                 toggleBrowserFullscreenBtn.textContent = 'Pełny Ekran Strony'; 
             }
             
-            // Daj przeglądarce czas na przeliczenie DOM po zmianie trybu pełnoekranowego
             setTimeout(() => {
                 adjustKickPlayerSize(); 
-                setGlobalAnimationState(false); // Zwolnij blokadę po zakończeniu przeliczania
-            }, ANIMATION_DURATION); // Podobne opóźnienie jak dla innych animacji
+                setGlobalAnimationState(false); 
+            }, ANIMATION_DURATION); 
         });
 
         // Inicjalizacja przy ładowaniu strony
         window.addEventListener('load', () => {
-            adjustKickPlayerSize();
-            // Ustaw początkową pozycję Twitch playera po załadowaniu i przeliczeniu rozmiarów
+            // Poczekaj chwilę, zanim wszystko się ustabilizuje
             setTimeout(() => {
+                adjustKickPlayerSize();
                 updateTwitchPlayer(defaultTwitchWidth, defaultTwitchHeight, 'topLeft'); 
-            }, 150); 
+            }, 200); // Nieco dłuższe opóźnienie na start
         });
 
-        // Upewnij się, że Kick się dostosowuje przy zmianie rozmiaru okna
         window.addEventListener('resize', adjustKickPlayerSize);
     </script>
 </body>
