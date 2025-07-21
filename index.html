@@ -26,18 +26,17 @@
         }
 
         #mainContent { 
-            flex-grow: 1; /* Upewnij się, że mainContent zajmuje całą dostępną przestrzeń */
+            flex-grow: 1; 
             display: flex;
             flex-direction: column; 
             position: relative; 
             padding: 10px; 
             box-sizing: border-box; 
-            /* usunięto stałe width: 80%; - flex-grow lepiej to obsłuży */
         }
 
         #kickPlayer {
             width: 100%; 
-            height: 100%; /* Ustawione przez JS */
+            height: 100%; 
             background-color: black;
         }
 
@@ -49,8 +48,8 @@
             left: 10px;
             border: 2px solid white;
             z-index: 100; 
-            transition: top 0.3s ease, left 0.3s ease, width 0.3s ease, height 0.3s ease, opacity 0.3s ease; /* Dodano opacity */
-            opacity: 1; /* Domyślnie widoczny */
+            transition: top 0.3s ease, left 0.3s ease, width 0.3s ease, height 0.3s ease, opacity 0.3s ease; 
+            opacity: 1; 
         }
         .controls { display: none !important; }
 
@@ -65,7 +64,7 @@
             transition: width 0.3s ease; 
             overflow: hidden; 
             position: relative; 
-            flex-shrink: 0; /* Zapobiegnij kurczeniu się sidebara poniżej jego width */
+            flex-shrink: 0; 
         }
 
         #chatSidebar.hidden {
@@ -104,19 +103,21 @@
             width: 50px;
             height: 50px;
             display: flex;
-            justify-content: center;
-            align-items: center;
+            justify-content: center; /* Wyśrodkowanie horyzontalne */
+            align-items: center; /* Wyśrodkowanie wertykalne */
             font-size: 2em;
             cursor: pointer;
             z-index: 200; 
             transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.3s ease; 
             opacity: 0.5; 
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Lekki cień */
         }
 
         #optionsToggleBtn:hover {
             background: rgba(255, 255, 255, 0.1); 
             border-color: rgba(255, 255, 255, 0.5);
             opacity: 1; 
+            transform: scale(1.05); /* Lekkie powiększenie na hover */
         }
 
         /* === MENU OPCJI === */
@@ -124,8 +125,8 @@
             position: fixed;
             bottom: 80px; 
             left: 20px;
-            background: rgba(0, 0, 0, 0.8); 
-            border: 1px solid rgba(255, 255, 255, 0.4);
+            background: linear-gradient(145deg, rgba(0, 0, 0, 0.9), rgba(20, 20, 20, 0.9)); /* Nowy gradient */
+            border: 1px solid rgba(255, 255, 255, 0.2); /* Delikatniejsza ramka */
             border-radius: 8px;
             padding: 10px;
             display: flex;
@@ -136,6 +137,7 @@
             visibility: hidden;
             transform: translateY(20px); 
             transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5); /* Silniejszy cień dla menu */
         }
 
         #optionsMenu.show {
@@ -145,20 +147,28 @@
         }
 
         #optionsMenu button {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.08); /* Delikatniejszy kolor bazowy */
             color: white;
             border: none;
-            padding: 8px 12px;
-            border-radius: 5px;
+            padding: 10px 15px; /* Większy padding */
+            border-radius: 6px; /* Bardziej zaokrąglone rogi */
             cursor: pointer;
-            font-size: 0.9em;
+            font-size: 0.95em; /* Nieco większy font */
             text-align: left; 
-            transition: background-color 0.2s ease;
+            transition: background-color 0.2s ease, transform 0.1s ease; /* Dodano transform */
             white-space: nowrap; 
+            display: flex; /* Użyj flexbox dla ikony i tekstu */
+            align-items: center; /* Wyśrodkuj wertykalnie */
+            gap: 10px; /* Odstęp między ikoną a tekstem */
         }
 
         #optionsMenu button:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.15); /* Jaśniejszy na hover */
+            transform: translateX(3px); /* Lekkie przesunięcie w prawo */
+        }
+        
+        #optionsMenu button:active {
+            transform: translateY(1px); /* Efekt wciśnięcia */
         }
 
         #optionsMenu .menu-group {
@@ -174,8 +184,10 @@
         }
 
         .disabled-button {
-            opacity: 0.5 !important; /* Ważne, żeby nadpisać hover */
+            opacity: 0.5 !important; 
             cursor: not-allowed !important;
+            box-shadow: none !important; /* Usuń cień dla nieaktywnych */
+            transform: none !important; /* Usuń transform dla nieaktywnych */
         }
     </style>
 </head>
@@ -200,24 +212,24 @@
 
     <div id="optionsMenu">
         <div class="menu-group">
-            <button id="shrinkTwitchPlayer">Pomniejsz Player TTV</button>
-            <button id="expandTwitchPlayer">Powiększ Player TTV</button>
+            <button id="shrinkTwitchPlayer" title="Zmniejsz rozmiar odtwarzacza Twitch">➖ Pomniejsz Player TTV</button>
+            <button id="expandTwitchPlayer" title="Zwiększ rozmiar odtwarzacza Twitch">➕ Powiększ Player TTV</button>
         </div>
         
         <div class="menu-group">
-            <button id="positionTopLeft">Przenieś TTV: Lewy Górny</button>
-            <button id="positionTopRight">Przenieś TTV: Prawy Górny</button>
-            <button id="positionBottomLeft">Przenieś TTV: Lewy Dolny</button>
-            <button id="positionBottomRight">Przenieś TTV: Prawy Dolny</button>
+            <button id="positionTopLeft" title="Przenieś odtwarzacz Twitch do lewego górnego rogu">↖️ Przenieś TTV: Lewy Górny</button>
+            <button id="positionTopRight" title="Przenieś odtwarzacz Twitch do prawego górnego rogu">↗️ Przenieś TTV: Prawy Górny</button>
+            <button id="positionBottomLeft" title="Przenieś odtwarzacz Twitch do lewego dolnego rogu">↙️ Przenieś TTV: Lewy Dolny</button>
+            <button id="positionBottomRight" title="Przenieś odtwarzacz Twitch do prawego dolnego rogu">↘️ Przenieś TTV: Prawy Dolny</button>
         </div>
 
         <div class="menu-group">
-            <button id="toggleChatDock">Dokuj TTV nad czat</button>
-            <button id="hideDockedTwitchPlayer">Ukryj TTV (gdy zadokowany)</button> </div>
+            <button id="toggleChatDock" title="Dokuj/Odeślij odtwarzacz Twitch nad czatem">↔️ Dokuj TTV nad czat</button>
+            <button id="hideDockedTwitchPlayer" title="Ukryj/Pokaż odtwarzacz Twitch, gdy jest zadokowany">👁️ Ukryj TTV (gdy zadokowany)</button> </div>
 
         <div class="menu-group">
-            <button id="toggleChatVisibilityBtn">Ukryj/Pokaż Czat</button>
-            <button id="toggleBrowserFullscreen">Pełny Ekran Strony</button>
+            <button id="toggleChatVisibilityBtn" title="Ukryj/Pokaż panel czatu">💬 Ukryj/Pokaż Czat</button>
+            <button id="toggleBrowserFullscreen" title="Przełącz tryb pełnoekranowy przeglądarki">🖥️ Pełny Ekran Strony</button>
         </div>
     </div>
 
@@ -238,7 +250,7 @@
         const positionBottomLeftBtn = document.getElementById('positionBottomLeft');
         const positionBottomRightBtn = document.getElementById('positionBottomRight');
         const toggleChatDockBtn = document.getElementById('toggleChatDock');
-        const hideDockedTwitchPlayerBtn = document.getElementById('hideDockedTwitchPlayer'); // Nowy przycisk
+        const hideDockedTwitchPlayerBtn = document.getElementById('hideDockedTwitchPlayer'); 
         const toggleChatVisibilityBtn = document.getElementById('toggleChatVisibilityBtn');
         const toggleBrowserFullscreenBtn = document.getElementById('toggleBrowserFullscreen');
 
@@ -258,7 +270,7 @@
 
         let isPlayerDockedToChat = false; 
         let isChatHidden = false; 
-        let isTwitchPlayerHiddenWhenDocked = false; // Nowa zmienna stanu
+        let isTwitchPlayerHiddenWhenDocked = false; 
 
         function adjustKickPlayerSize() {
             const mainContentRect = mainContent.getBoundingClientRect();
@@ -292,6 +304,7 @@
                 optionsToggleBtn.removeAttribute('disabled');
             }
         }
+
 
         // --- OBSŁUGA MENU OPCJI ---
         let isMenuOpen = false;
@@ -333,9 +346,9 @@
 
             // Obsługa opacity (widoczności) Twitcha
             if (newPosition !== 'docked' || !isTwitchPlayerHiddenWhenDocked) {
-                twitchPlayer.style.opacity = '1'; // Przywróć widoczność, chyba że ma być ukryty gdy zadokowany
+                twitchPlayer.style.opacity = '1'; 
             } else if (newPosition === 'docked' && isTwitchPlayerHiddenWhenDocked) {
-                 twitchPlayer.style.opacity = '0'; // Ukryj, jeśli zadokowany i flaga jest ustawiona
+                 twitchPlayer.style.opacity = '0'; 
             }
 
             // Obliczanie nowej pozycji
@@ -368,7 +381,6 @@
                         targetTop = chatSidebarRect.top;
                         break;
                     default:
-                        // Użyj aktualnych pozycji, jeśli newPosition nie jest znane
                         const currentRect = twitchPlayer.getBoundingClientRect();
                         targetLeft = currentRect.left;
                         targetTop = currentRect.top;
@@ -394,9 +406,9 @@
                 twitchChatIframe.style.height = `100%`;
                 twitchChatIframe.style.top = `0px`;
                 twitchChatIframe.style.position = 'static'; 
-                // Upewnij się, że opacity wraca do 1, jeśli nie jest zadokowany
-                twitchPlayer.style.opacity = '1';
+                twitchPlayer.style.opacity = '1'; // Zawsze przywróć widoczność po odokowaniu
                 isTwitchPlayerHiddenWhenDocked = false; // Resetuj stan ukrycia
+                hideDockedTwitchPlayerBtn.textContent = 'Ukryj TTV (gdy zadokowany)'; // Resetuj tekst przycisku
             }
 
             setTimeout(() => {
@@ -441,15 +453,13 @@
                 updateTwitchPlayer(defaultTwitchWidth, defaultTwitchHeight, 'topLeft'); 
             } else {
                 if (isChatHidden) {
-                    toggleChatVisibility(true); // Pokaż czat jeśli ukryty (przycisk w menu)
-                    // Dokowanie zostanie wykonane w callbacku po zakończeniu animacji czatu
-                    // (chociaż tutaj nie używamy callbacku, to toggleChatVisibility odblokuje globalAnimating)
-                    // Musimy to zrobić w następnym cyklu zdarzeń po toggleChatVisibility zakończy animację
+                    toggleChatVisibility(true); 
                     setTimeout(() => {
-                        if (!isGlobalAnimating && !isChatHidden) { // Upewnij się, że czat jest widoczny i system wolny
+                        // Sprawdź ponownie, czy nie ma kolizji, zanim zadokujesz
+                        if (!isGlobalAnimating && !isChatHidden) { 
                             updateTwitchPlayer(CHAT_VISIBLE_WIDTH, CHAT_VISIBLE_WIDTH * 9 / 16, 'docked');
                         }
-                    }, ANIMATION_DURATION + 50); // Daj trochę zapasu
+                    }, ANIMATION_DURATION + 50); 
                 } else {
                     updateTwitchPlayer(CHAT_VISIBLE_WIDTH, CHAT_VISIBLE_WIDTH * 9 / 16, 'docked');
                 }
@@ -461,6 +471,7 @@
             if (isGlobalAnimating) return;
             if (!isPlayerDockedToChat) {
                 alert('Player Twitcha musi być zadokowany, aby go ukryć.');
+                toggleOptionsMenu(); // Zamykamy menu po alercie
                 return;
             }
 
@@ -482,7 +493,6 @@
 
 
         // --- Funkcjonalność UKRYWANIA/POKAZYWANIA CZATU ---
-        // Zmieniono callback na wywołanie funkcji dopiero po zakończeniu animacji toggleChatVisibility
         function toggleChatVisibility(fromButton = true) {
             if (isGlobalAnimating && fromButton) return;
             setGlobalAnimationState(true);
@@ -542,11 +552,10 @@
 
         // Inicjalizacja przy ładowaniu strony
         window.addEventListener('load', () => {
-            // Poczekaj chwilę, zanim wszystko się ustabilizuje
             setTimeout(() => {
                 adjustKickPlayerSize();
                 updateTwitchPlayer(defaultTwitchWidth, defaultTwitchHeight, 'topLeft'); 
-            }, 200); // Nieco dłuższe opóźnienie na start
+            }, 200); 
         });
 
         window.addEventListener('resize', adjustKickPlayerSize);
