@@ -84,15 +84,15 @@
             top: 0;
             left: 0;
             width: 100%;
-            /* WAŻNE: Zwiększamy wysokość do 85px, aby odsłonić cały dolny pasek czatu Twitcha */
-            height: calc(100% - 85px); /* ZMIENIONO Z 55px NA 85px */
+            /* WAŻNE: Zwiększamy wysokość i zmieniamy pointer-events */
+            height: calc(100% - 95px); /* ZMIENIONO Z 85px NA 95px (możesz spróbować 100px) */
             z-index: 2; /* Na wierzchu */
             display: flex;
             flex-direction: column;
             background-color: #1a1a1a; /* Nieprzezroczyste tło, aby zakryć iframe pod spodem */
             padding: 10px;
             box-sizing: border-box;
-            pointer-events: auto; /* Pozostawiamy aktywny dla przewijania itd. */
+            pointer-events: none; /* KLUCZOWA ZMIANA: Pozwala na klikanie przez tę warstwę */
         }
 
         #chatMessages {
@@ -100,6 +100,7 @@
             overflow-y: auto;
             padding-right: 5px;
             word-wrap: break-word;
+            pointer-events: auto; /* KLUCZOWA ZMIANA: Tylko wiadomości są klikalne (dla przewijania) */
         }
         /* Ukrywamy input z custom chatu, bo używamy tego z iframe'a Twitcha */
         #chatInputContainer {
@@ -247,6 +248,25 @@
             }
         }
 
+        async function fetchGlobalBttvEmotes() {
+            try {
+                const response = await fetch('https://api.betterttv.net/3/cached/emotes/global');
+                const data = await response.json();
+                bttvGlobalEmotes = data.reduce((acc, emote) => {
+                    acc[emote.code] = `https://cdn.betterttv.net/emote/${emote.id}/2x`; // 2x rozmiar
+                    return acc;
+                }, {});
+                console.log('Pobrano globalne emotki BTTV.');
+            } catch (error) {
+                console.error('Błąd podczas pobierania globalnych emotek BTTV:', error);
+            }
+        }
+
+        // UWAGA: Funkcje pobierające emotki KANAŁOWE zostały ZAKOMENTOWANE
+        // w celu diagnozy problemu z połączeniem TMI.js / Client ID.
+        // Po udanym połączeniu TMI.js, możesz je ODKOMENTOWAĆ.
+
+        /*
         async function fetchChannel7TvEmotes(twitchId) {
             if (!twitchId) return;
             try {
@@ -262,20 +282,6 @@
                 }
             } catch (error) {
                 console.error(`Błąd podczas pobierania emotek 7TV dla kanału ${CHANNEL_NAME}:`, error);
-            }
-        }
-
-        async function fetchGlobalBttvEmotes() {
-            try {
-                const response = await fetch('https://api.betterttv.net/3/cached/emotes/global');
-                const data = await response.json();
-                bttvGlobalEmotes = data.reduce((acc, emote) => {
-                    acc[emote.code] = `https://cdn.betterttv.net/emote/${emote.id}/2x`; // 2x rozmiar
-                    return acc;
-                }, {});
-                console.log('Pobrano globalne emotki BTTV.');
-            } catch (error) {
-                console.error('Błąd podczas pobierania globalnych emotek BTTV:', error);
             }
         }
 
@@ -323,8 +329,12 @@
                 console.error(`Błąd podczas pobierania emotek FFZ dla kanału ${CHANNEL_NAME}:`, error);
             }
         }
+        */
 
         // --- Funkcja do pobierania Twitch ID kanału (potrzebne dla emotek kanałowych) ---
+        // Ta funkcja również jest ZAKOMENTOWANA, ponieważ zależy od Client ID i API Twitcha.
+        // ODKOMENTUJ ją, gdy podstawowe połączenie TMI.js zadziała.
+        /*
         async function getTwitchChannelId(channelName) {
             try {
                 // !!! TWOJE KLIENT ID WPROWADZONE PONIŻEJ !!!
@@ -346,7 +356,7 @@
                 return null;
             }
         }
-
+        */
 
         // --- Funkcja dodająca wiadomość do czatu ---
         function addChatMessage(username, message, color = '#FFFFFF', badges = {}) {
@@ -427,7 +437,8 @@
             addChatMessage('System', `Połączono z czatem Twitcha (${CHANNEL_NAME}).`);
             console.log(`Połączono z Twitch IRC: ${address}:${port}`);
 
-            // Pobierz ID kanału, a następnie emotki kanałowe
+            // !!! ZAKOMENTOWANO POBIERANIE EMOTEK KANAŁOWYCH DLA DIAGNOSTYKI !!!
+            /*
             getTwitchChannelId(CHANNEL_NAME).then(twitchId => {
                 if (twitchId) {
                     fetchChannel7TvEmotes(twitchId);
@@ -435,6 +446,7 @@
                     fetchChannelFfzEmotes(twitchId);
                 }
             });
+            */
         });
 
         // Nasłuchiwanie wiadomości czatu
@@ -460,6 +472,7 @@
         });
 
         // --- Inicjalizacja pobierania emotek globalnych przy starcie strony ---
+        // Globalne emotki NIE są zależne od Client ID, więc powinny działać niezależnie.
         fetchGlobal7TvEmotes();
         fetchGlobalBttvEmotes();
         // Globalne emotki FFZ nie są obsługiwane przez API v1, tylko kanałowe są łatwo dostępne.
