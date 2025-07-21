@@ -34,7 +34,7 @@
             left: 10px;
             border: 2px solid white;
             cursor: grab;
-            z-index: 10;
+            z-index: 100; /* ZMIENIONO: Najwyższy z-index, aby player był zawsze na wierzchu */
         }
         .controls {
             position: absolute;
@@ -73,8 +73,9 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%; /* Upewniamy się, że iframe ma pełną wysokość kontenera */
-            z-index: 1; /* Zmieniamy z-index na niższy, żeby nasz czat był na wierzchu, ale nie kolidował z polem */
+            height: 100%;
+            z-index: 1; /* Pod customChatContainer, ale nadal na wierzchu, aby jego pole działało */
+            /* WAŻNE: Nie dodajemy tu pointer-events: none; Musi być interaktywny. */
         }
 
         #customChatContainer {
@@ -82,16 +83,16 @@
             top: 0;
             left: 0;
             width: 100%;
-            /* WAŻNE: Zwiększamy wysokość, aby nie nachodzić na pole tekstowe Twitcha */
-            /* Zwiększono z 95px na 110px. Możesz próbować 100px, 105px, 115px, 120px */
-            height: calc(100% - 110px); /* KLUCZOWA ZMIANA */
-            z-index: 2; /* CustomChatContainer na wierzchu, ale nie zasłaniając dolnego paska */
+            /* WAŻNE: Zwiększamy wysokość, aby customowy czat kończył się WYRAŹNIE POWYŻEJ pola do pisania Twitcha */
+            /* Zwiększono z 110px na 130px. Wartość do precyzyjnego dopasowania. */
+            height: calc(100% - 130px); /* KLUCZOWA ZMIANA */
+            z-index: 2; /* CustomChatContainer jest na wierzchu, ale NIE ZASŁANIA dolnego paska iframe'a Twitcha */
             display: flex;
             flex-direction: column;
             background-color: #1a1a1a; /* Nieprzezroczyste tło, aby zakryć iframe pod spodem */
             padding: 10px;
             box-sizing: border-box;
-            /* Usunięto pointer-events: none; bo nie nachodzimy już na pole tekstowe */
+            /* Usunięto pointer-events: none; bo nie nachodzimy już na pole tekstowe, więc nie ma konfliktu */
         }
 
         #chatMessages {
