@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Multistream</title>
+
     <style>
         body {
             margin: 0;
@@ -11,15 +12,17 @@
             background-color: black;
             display: flex;
             justify-content: center;
+            font-family: Arial, sans-serif;
+            color: white;
         }
         #container {
             position: relative;
-            width: 80%;
+            width: 80%; /* Szerokość dla odtwarzaczy */
             display: flex;
             justify-content: space-between;
         }
         #kickPlayer {
-            width: 1533px;
+            width: 1533px; /* Zgodnie z Twoim obecnym ustawieniem */
             height: calc(1533px * 9 / 16);
             background-color: black;
         }
@@ -31,6 +34,7 @@
             left: 10px;
             border: 2px solid white;
             cursor: grab;
+            z-index: 100; /* Najwyższy z-index, aby player był zawsze na wierzchu */
         }
         .controls {
             position: absolute;
@@ -41,27 +45,62 @@
             background: rgba(0, 0, 0, 0.6);
             padding: 5px;
             border-radius: 5px;
+            white-space: nowrap;
         }
         .controls button {
             background: white;
             border: none;
             padding: 5px;
             cursor: pointer;
+            margin: 0 2px;
+            border-radius: 3px;
         }
         #twitchPlayer:hover .controls {
             display: flex;
         }
-        #chat {
-            width: 20%;
+
+        /* === Warstwowanie czatu z giambaj.it === */
+        #chatWrapper {
+            width: 20%; /* Szerokość całej sekcji czatu */
             height: 100vh;
             border-left: 2px solid white;
+            position: relative; /* Ważne dla pozycjonowania dzieci */
+            overflow: hidden; /* Ukryje wszelkie przepełnienia */
+            background-color: #1a1a1a; /* Kolor tła dla całej sekcji czatu */
+        }
+
+        #giambajChatIframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            /* Wysokość giambaj.it: Musi kończyć się powyżej pola tekstowego oryginalnego czatu Twitcha */
+            /* Ta wartość jest początkowa, być może będzie wymagała drobnych korekt */
+            height: calc(100% - 95px);
+            z-index: 2; /* Będzie na wierzchu oryginalnego czatu Twitcha */
+            border: none; /* Brak ramki */
+            background-color: transparent; /* Upewnij się, że ma przezroczyste tło, jeśli potrzebujesz tła pod nim */
+        }
+
+        #twitchChatInputIframe {
+            position: absolute;
+            bottom: 0; /* Przyczepiamy go do dołu chatWrapper */
+            left: 0;
+            width: 100%;
+            height: 95px; /* Domyślna wysokość dolnego paska czatu Twitcha (do dostosowania) */
+            z-index: 1; /* Pod giambajChatIframe, aby jego górna część była zakryta */
+            border: none;
+            overflow: hidden; /* Ważne: ukrywa wszystko poza dolnym paskiem */
+            /* Ustawiamy margines ujemny, aby przesunąć pole tekstowe w górę i ukryć resztę iframe */
+            /* Ta wartość może wymagać dostosowania, aby dokładnie wycentrować pole tekstowe w widocznym obszarze */
+            margin-top: -9999px; /* Duży ujemny margines, aby ukryć górę iframe */
         }
     </style>
 </head>
 <body>
     <div id="container">
         <iframe id="kickPlayer" src="https://player.kick.com/imbotmundrol" frameborder="0" allowfullscreen="true"></iframe>
-        
+
         <div id="twitchPlayer">
             <iframe src="https://player.twitch.tv/?channel=adamekl&parent=film.adameklive.pl" frameborder="0" allowfullscreen width="100%" height="100%"></iframe>
             <div class="controls">
@@ -71,19 +110,15 @@
             </div>
         </div>
     </div>
-    
-    <iframe id="chat" src="https://www.twitch.tv/embed/adamekl/chat?parent=film.adameklive.pl" frameborder="0" style="pointer-events: all;" sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-modals"></iframe>
-    
-    <!-- Skrypt 7TV -->
-    <script>
-        if (typeof window.SevenTV === 'undefined') {
-            const script = document.createElement('script');
-            script.src = 'https://cdn.7tv.app/7tv.min.js';
-            document.head.appendChild(script);
-        }
-    </script>
+
+    <div id="chatWrapper">
+        <iframe id="giambajChatIframe" src="https://www.giambaj.it/twitch/jchat/v2/?channel=adamekl&size=2&font=2&shadow=1" frameborder="0" allowfullscreen></iframe>
+
+        <iframe id="twitchChatInputIframe" src="https://www.twitch.tv/embed/adamekl/chat?parent=film.adameklive.pl" frameborder="0" allowfullscreen sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-modals"></iframe>
+    </div>
 
     <script>
+        // --- Kod do obsługi playera Twitcha (z Twojego oryginalnego kodu) ---
         const twitchPlayer = document.getElementById('twitchPlayer');
         const controls = document.querySelector('.controls');
 
@@ -91,7 +126,7 @@
         let minHeight = 120;
         let maxWidth = 854;
         let maxHeight = 480;
-        
+
         let isMoving = false;
         let offsetX, offsetY;
 
@@ -115,6 +150,7 @@
             offsetX = e.clientX - twitchPlayer.offsetLeft;
             offsetY = e.clientY - twitchPlayer.offsetTop;
             document.body.style.cursor = 'grabbing';
+            e.preventDefault();
         });
 
         document.addEventListener('mousemove', (e) => {
@@ -123,11 +159,12 @@
                     let newLeft = e.clientX - offsetX;
                     let newTop = e.clientY - offsetY;
 
-                    newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - twitchPlayer.offsetWidth));
-                    newTop = Math.max(0, Math.min(newTop, window.innerHeight - twitchPlayer.offsetHeight));
+                    const containerRect = document.getElementById('container').getBoundingClientRect();
+                    newLeft = Math.max(containerRect.left, Math.min(newLeft, containerRect.right - twitchPlayer.offsetWidth));
+                    newTop = Math.max(containerRect.top, Math.min(newTop, containerRect.bottom - twitchPlayer.offsetHeight));
 
-                    twitchPlayer.style.left = `${newLeft}px`;
-                    twitchPlayer.style.top = `${newTop}px`;
+                    twitchPlayer.style.left = `${newLeft - containerRect.left}px`;
+                    twitchPlayer.style.top = `${newTop - containerRect.top}px`;
                 });
             }
         });
@@ -142,7 +179,9 @@
         });
 
         twitchPlayer.addEventListener('mouseleave', () => {
-            controls.style.display = 'none';
+            if (!isMoving) {
+                controls.style.display = 'none';
+            }
         });
     </script>
 </body>
