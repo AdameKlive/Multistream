@@ -35,6 +35,7 @@
             border: 2px solid white;
             cursor: grab;
             z-index: 100; /* Najwyższy z-index, aby player był zawsze na wierzchu */
+            transition: left 0.3s ease, top 0.3s ease, width 0.3s ease, height 0.3s ease; /* Płynne animacje dla przenoszenia */
         }
         .controls {
             position: absolute;
@@ -67,6 +68,7 @@
             position: relative; /* Ważne dla pozycjonowania dzieci */
             overflow: hidden; /* Ukryje wszelkie przepełnienia */
             background-color: #1a1a1a; /* Kolor tła dla całej sekcji czatu */
+            transition: width 0.3s ease, height 0.3s ease; /* Dla płynnych zmian rozmiaru czatu */
         }
 
         #giambajChatIframe {
@@ -74,12 +76,12 @@
             top: 0;
             left: 0;
             width: 100%;
-            /* Wysokość giambaj.it: Musi kończyć się powyżej pola tekstowego oryginalnego czatu Twitcha */
-            /* Ta wartość jest początkowa, być może będzie wymagała drobnych korekt */
+            /* Początkowa wysokość giambaj.it (gdy player nie jest nad nim) */
             height: calc(100% - 95px);
             z-index: 2; /* Będzie na wierzchu oryginalnego czatu Twitcha */
             border: none; /* Brak ramki */
-            background-color: transparent; /* Upewnij się, że ma przezroczyste tło, jeśli potrzebujesz tła pod nim */
+            background-color: transparent;
+            transition: height 0.3s ease, top 0.3s ease; /* Płynne animacje dla wysokości czatu */
         }
 
         #twitchChatInputIframe {
@@ -91,8 +93,6 @@
             z-index: 1; /* Pod giambajChatIframe, aby jego górna część była zakryta */
             border: none;
             overflow: hidden; /* Ważne: ukrywa wszystko poza dolnym paskiem */
-            /* Ustawiamy margines ujemny, aby przesunąć pole tekstowe w górę i ukryć resztę iframe */
-            /* Ta wartość może wymagać dostosowania, aby dokładnie wycentrować pole tekstowe w widocznym obszarze */
             margin-top: -9999px; /* Duży ujemny margines, aby ukryć górę iframe */
         }
     </style>
@@ -107,7 +107,7 @@
                 <button id="shrink">➖</button>
                 <button id="expand">➕</button>
                 <button id="move">🔲</button>
-            </div>
+                <button id="toggleChatDock">Dokuja</button> </div>
         </div>
     </div>
 
@@ -118,17 +118,25 @@
     </div>
 
     <script>
-        // --- Kod do obsługi playera Twitcha (z Twojego oryginalnego kodu) ---
         const twitchPlayer = document.getElementById('twitchPlayer');
         const controls = document.querySelector('.controls');
+        const chatWrapper = document.getElementById('chatWrapper');
+        const giambajChatIframe = document.getElementById('giambajChatIframe');
+        const twitchChatInputIframe = document.getElementById('twitchChatInputIframe');
+        const toggleChatDockButton = document.getElementById('toggleChatDock');
 
         let minWidth = 213;
         let minHeight = 120;
         let maxWidth = 854;
         let maxHeight = 480;
+        
+        // Zapisz początkowe pozycje i rozmiary playera
+        const initialPlayerLeft = twitchPlayer.offsetLeft;
+        const initialPlayerTop = twitchPlayer.offsetTop;
+        const initialPlayerWidth = twitchPlayer.offsetWidth;
+        const initialPlayerHeight = twitchPlayer.offsetHeight;
 
-        let isMoving = false;
-        let offsetX, offsetY;
+        let isPlayerDockedToChat = false; // Nowy stan
 
         function changeSize(delta) {
             let currentWidth = twitchPlayer.offsetWidth;
@@ -140,10 +148,18 @@
 
             twitchPlayer.style.width = `${newWidth}px`;
             twitchPlayer.style.height = `${newHeight}px`;
+
+            // Jeśli player jest zadokowany, zaktualizuj wysokość czatu po zmianie rozmiaru playera
+            if (isPlayerDockedToChat) {
+                dockPlayerToChat(); // Ponownie wywołaj, aby przeliczyć rozmiary
+            }
         }
 
         document.getElementById('shrink').addEventListener('click', () => changeSize(-42));
         document.getElementById('expand').addEventListener('click', () => changeSize(42));
+
+        let isMoving = false;
+        let offsetX, offsetY;
 
         document.getElementById('move').addEventListener('mousedown', (e) => {
             isMoving = true;
@@ -151,6 +167,11 @@
             offsetY = e.clientY - twitchPlayer.offsetTop;
             document.body.style.cursor = 'grabbing';
             e.preventDefault();
+
+            // Jeśli player był zadokowany, odblokuj go przy rozpoczęciu przenoszenia
+            if (isPlayerDockedToChat) {
+                undockPlayerFromChat();
+            }
         });
 
         document.addEventListener('mousemove', (e) => {
@@ -181,6 +202,64 @@
         twitchPlayer.addEventListener('mouseleave', () => {
             if (!isMoving) {
                 controls.style.display = 'none';
+            }
+        });
+
+        // --- Nowa funkcjonalność DOCKOWANIA ---
+
+        function dockPlayerToChat() {
+            const chatRect = chatWrapper.getBoundingClientRect();
+            const playerWidth = twitchPlayer.offsetWidth;
+            const playerHeight = twitchPlayer.offsetHeight;
+
+            // Ustaw playera w górnym lewym rogu obszaru czatu
+            // Pozycja left i top są względem rodzica (#container lub <body>, w zależności od twojego CSS)
+            // Zakładam, że #container obejmuje kickPlayer i space-between, więc player twitcha będzie musiał być
+            // pozycjonowany względem krawędzi okna/body, a potem odjęta pozycja chatWrapper
+            
+            // Oblicz docelową pozycję w kontenerze
+            const targetLeft = chatRect.left - document.getElementById('container').getBoundingClientRect().left; // Lewa krawędź chatWrapper
+            const targetTop = 0; // Góra chatWrapper
+
+            twitchPlayer.style.left = `${targetLeft}px`;
+            twitchPlayer.style.top = `${targetTop}px`;
+
+            // Dostosuj rozmiar playera, aby pasował do szerokości czatu (opcjonalnie, ale wygląda lepiej)
+            twitchPlayer.style.width = `${chatRect.width}px`;
+            twitchPlayer.style.height = `${chatRect.width * 9 / 16}px`; // Zachowaj proporcje 16:9
+
+            // Zaktualizuj playerHeight po zmianie szerokości
+            const newPlayerHeight = twitchPlayer.offsetHeight;
+
+            // Zmniejsz wysokość JChat iframe
+            const twitchInputHeight = twitchChatInputIframe.offsetHeight; // Powinno być ~95px
+            giambajChatIframe.style.height = `calc(100% - ${newPlayerHeight + twitchInputHeight}px)`;
+            giambajChatIframe.style.top = `${newPlayerHeight}px`; // Przesuń JChat pod playera
+
+            isPlayerDockedToChat = true;
+            toggleChatDockButton.textContent = 'Odeślij'; // Zmień tekst przycisku
+        }
+
+        function undockPlayerFromChat() {
+            // Przywróć oryginalne pozycje i rozmiary playera
+            twitchPlayer.style.left = `${initialPlayerLeft}px`;
+            twitchPlayer.style.top = `${initialPlayerTop}px`;
+            twitchPlayer.style.width = `${initialPlayerWidth}px`;
+            twitchPlayer.style.height = `${initialPlayerHeight}px`;
+
+            // Przywróć oryginalną wysokość JChat iframe
+            giambajChatIframe.style.height = `calc(100% - 95px)`; // Powrót do domyślnej wysokości
+            giambajChatIframe.style.top = `0px`; // Powrót na górę
+
+            isPlayerDockedToChat = false;
+            toggleChatDockButton.textContent = 'Dokuja'; // Zmień tekst przycisku
+        }
+
+        toggleChatDockButton.addEventListener('click', () => {
+            if (isPlayerDockedToChat) {
+                undockPlayerFromChat();
+            } else {
+                dockPlayerToChat();
             }
         });
     </script>
