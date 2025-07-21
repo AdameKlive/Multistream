@@ -68,15 +68,48 @@
             position: relative; /* Ważne dla pozycjonowania iframe czatu */
             overflow: hidden;
             background-color: #1a1a1a;
+            display: flex; /* Użyj flexboxa do ułożenia przycisku i iframe */
+            flex-direction: column; /* Ułóż w kolumnie */
+        }
+        
+        /* Klasa do ukrywania czatu */
+        #chatWrapper.hidden {
+            width: 50px; /* Minimalna szerokość, żeby przycisk był widoczny */
+            /* Możesz też ustawić display: none; jeśli chcesz całkowicie ukryć */
+            /* display: none; */ 
         }
 
-        #twitchChatIframe { /* Zmieniona nazwa ID z twitchChatInputIframe */
-            position: absolute;
-            top: 0;
-            left: 0;
+        #twitchChatIframe { 
+            position: relative; /* Zmienione na relative */
+            flex-grow: 1; /* Pozwól mu rosnąć */
             width: 100%;
-            height: 100%; /* Iframe Twitcha zajmuje całą dostępną wysokość */
+            /* height: 100%; - usunięte, flex-grow to załatwi */
             border: none;
+        }
+
+        /* Styl dla kontrolek czatu (przycisku ukrywania) */
+        .chat-controls {
+            position: absolute; /* Pozycjonowanie absolutne wewnątrz chatWrapper */
+            top: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10; /* Upewnij się, że jest nad czatem */
+            white-space: nowrap;
+            display: flex; /* Aby przyciski były w linii */
+            gap: 5px; /* Odstęp między przyciskami */
+        }
+        .chat-controls button {
+            background: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 3px;
+            font-size: 0.8em;
+        }
+
+        /* Ukryj iframe czatu, gdy chatWrapper jest ukryty */
+        #chatWrapper.hidden #twitchChatIframe {
+            display: none;
         }
     </style>
 </head>
@@ -90,19 +123,23 @@
                 <button id="shrink" title="Zmniejsz player">➖</button>
                 <button id="expand" title="Powiększ player">➕</button>
                 <button id="move" title="Przeciągnij player">🔲</button>
-                <button id="toggleChatDock" title="Zadokuj/Odokuj player nad czatem">Dokuj</button> </div>
+                <button id="toggleChatDock" title="Zadokuj/Odokuj player nad czatem">Dokuj</button>
+            </div>
         </div>
     </div>
 
     <div id="chatWrapper">
+        <div class="chat-controls">
+            <button id="toggleChatVisibility" title="Ukryj/Pokaż cały czat">Ukryj Czat</button>
+        </div>
         <iframe id="twitchChatIframe" src="https://www.twitch.tv/embed/adamekl/chat?parent=film.adameklive.pl" frameborder="0" allowfullscreen sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-modals"></iframe>
     </div>
 
     <script>
         const twitchPlayer = document.getElementById('twitchPlayer');
         const controls = document.querySelector('.controls');
-        const chatWrapper = document.getElementById('chatWrapper'); // Potrzebne do dokowania
-        const twitchChatIframe = document.getElementById('twitchChatIframe'); // Zmieniona nazwa
+        const chatWrapper = document.getElementById('chatWrapper');
+        const twitchChatIframe = document.getElementById('twitchChatIframe');
 
         let minWidth = 213;
         let minHeight = 120;
@@ -128,9 +165,8 @@
             twitchPlayer.style.width = `${newWidth}px`;
             twitchPlayer.style.height = `${newHeight}px`;
 
-            // Jeśli player jest zadokowany, zaktualizuj wysokość czatu po zmianie rozmiaru playera
             if (isPlayerDockedToChat) {
-                dockPlayerToChat(true); // Ponownie wywołaj, aby przeliczyć i zastosować nowe rozmiary
+                dockPlayerToChat(true); 
             }
         }
 
@@ -147,7 +183,6 @@
             document.body.style.cursor = 'grabbing';
             e.preventDefault();
 
-            // Jeśli player był zadokowany, odblokuj go przy rozpoczęciu przenoszenia
             if (isPlayerDockedToChat) {
                 undockPlayerFromChat();
             }
@@ -185,41 +220,40 @@
         });
 
         // --- Funkcjonalność DOCKOWANIA ---
-        // Ta funkcja dostosowuje wysokość iframe'a czatu po zadokowaniu playera
         function dockPlayerToChat(forceRecalculate = false) {
             if (isPlayerDockedToChat && !forceRecalculate) return;
+
+            // Jeśli czat jest ukryty, najpierw go pokaż
+            if (chatWrapper.classList.contains('hidden')) {
+                toggleChatVisibility(false); // Pokaż czat bez wywoływania listenera
+            }
 
             const chatRect = chatWrapper.getBoundingClientRect();
             let playerWidthOnDock = chatRect.width; 
             
-            // Dopasuj rozmiar playera do szerokości czatu, zachowując proporcje
             twitchPlayer.style.width = `${playerWidthOnDock}px`;
             twitchPlayer.style.height = `${playerWidthOnDock * 9 / 16}px`;
             
-            const playerHeightOnDock = twitchPlayer.offsetHeight; // Pobierz nową wysokość playera
+            const playerHeightOnDock = twitchPlayer.offsetHeight; 
 
             const containerRect = document.getElementById('container').getBoundingClientRect();
             twitchPlayer.style.left = `${chatRect.left - containerRect.left}px`;
             twitchPlayer.style.top = `${chatRect.top - containerRect.top}px`;
 
-            // Zmniejsz wysokość iframe'a czatu, aby player się zmieścił
             twitchChatIframe.style.height = `calc(100% - ${playerHeightOnDock}px)`;
-            twitchChatIframe.style.top = `${playerHeightOnDock}px`; // Przesuń czat pod playera
+            twitchChatIframe.style.top = `${playerHeightOnDock}px`;
 
             isPlayerDockedToChat = true;
             toggleChatDockButton.textContent = 'Odeślij';
             toggleChatDockButton.title = 'Odokuj player i przywróć czat';
         }
 
-        // Ta funkcja przywraca oryginalną wysokość iframe'a czatu
         function undockPlayerFromChat() {
-            // Przywróć oryginalne pozycje i rozmiary playera
             twitchPlayer.style.left = `${initialPlayerLeft}px`;
             twitchPlayer.style.top = `${initialPlayerTop}px`;
             twitchPlayer.style.width = `${initialPlayerWidth}px`;
             twitchPlayer.style.height = `${initialPlayerHeight}px`;
 
-            // Przywróć oryginalną wysokość iframe'a czatu
             twitchChatIframe.style.height = `100%`;
             twitchChatIframe.style.top = `0px`;
 
@@ -236,6 +270,26 @@
                 dockPlayerToChat();
             }
         });
+
+        // --- Funkcjonalność UKRYWANIA CZATU ---
+        const toggleChatVisibilityButton = document.getElementById('toggleChatVisibility');
+        
+        function toggleChatVisibility(fromButton = true) {
+            chatWrapper.classList.toggle('hidden');
+            if (chatWrapper.classList.contains('hidden')) {
+                toggleChatVisibilityButton.textContent = 'Pokaż Czat';
+                toggleChatVisibilityButton.title = 'Pokaż cały czat';
+                // Jeśli czat jest ukrywany, odokuj playera, jeśli był zadokowany
+                if (isPlayerDockedToChat) {
+                    undockPlayerFromChat();
+                }
+            } else {
+                toggleChatVisibilityButton.textContent = 'Ukryj Czat';
+                toggleChatVisibilityButton.title = 'Ukryj cały czat';
+            }
+        }
+
+        toggleChatVisibilityButton.addEventListener('click', () => toggleChatVisibility(true));
     </script>
 </body>
 </html>
