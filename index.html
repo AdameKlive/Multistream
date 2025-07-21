@@ -84,9 +84,8 @@
             top: 0;
             left: 0;
             width: 100%;
-            /* WAŻNE: Ustawiamy wysokość tak, aby pozostawić miejsce na pole do pisania Twitcha */
-            /* Ta wartość może wymagać dopasowania (np. 50px, 55px, 60px) w zależności od dokładnego wyglądu czatu Twitcha */
-            height: calc(100% - 55px); /* KLUCZOWA ZMIANA: 55px to przykładowa wysokość pola do pisania */
+            /* WAŻNE: Zwiększamy wysokość do 85px, aby odsłonić cały dolny pasek czatu Twitcha */
+            height: calc(100% - 85px); /* ZMIENIONO Z 55px NA 85px */
             z-index: 2; /* Na wierzchu */
             display: flex;
             flex-direction: column;
