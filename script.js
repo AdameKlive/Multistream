@@ -36,6 +36,8 @@ let isPlayerDockedToChat = false;
 let isChatHidden = false; 
 let isTwitchPlayerHidden = false; 
 let currentTwitchPosition = 'topLeft'; // Śledzenie aktualnej pozycji, gdy nie jest zadokowany
+let lastUndockedTwitchWidth = defaultTwitchWidth; // Zapamiętujemy ostatni rozmiar przed zadokowaniem
+let lastUndockedTwitchHeight = defaultTwitchHeight; // Zapamiętujemy ostatni rozmiar przed zadokowaniem
 
 function adjustKickPlayerSize() {
     const mainContentRect = mainContent.getBoundingClientRect();
@@ -96,16 +98,93 @@ document.addEventListener('click', (e) => {
 });
 
 // --- ZARZĄDZANIE PLAYEREM TTV (ROZMIAR I POZYCJA) ---
-function updateTwitchPlayer(newWidth = twitchPlayer.offsetWidth, newHeight = twitchPlayer.offsetHeight, newPosition = null) {
-    if (isGlobalAnimating) return; 
+function updateTwitchPlayer(newWidth, newHeight, newPosition = null) {
+    if (isGlobalAnimating && newPosition !== 'docked') return; // Pozwól na dokowanie nawet w trakcie animacji
+
     setGlobalAnimationState(true); 
 
-    // Obliczanie nowego rozmiaru
-    let finalWidth = Math.min(Math.max(newWidth, minTwitchWidth), maxTwitchWidth);
-    let finalHeight = (finalWidth * 9) / 16;
-    finalHeight = Math.min(Math.max(finalHeight, minTwitchHeight), maxTwitchHeight);
+    let finalWidth = newWidth;
+    let finalHeight = newHeight;
 
-    // Zastosuj nowy rozmiar
+    // Obsługa dokowania
+    if (newPosition === 'docked') {
+        finalWidth = CHAT_VISIBLE_WIDTH; // Szerokość playera taka jak szerokość czatu
+        finalHeight = (finalWidth * 9) / 16; // Oblicz wysokość na podstawie proporcji 16:9
+        twitchPlayer.style.position = 'static'; // Pozycja statyczna dla dokowania
+        twitchPlayer.style.marginBottom = '0px'; // Usunięcie marginesu dolnego
+        chatIframeContainer.prepend(twitchPlayer); // Przenieś player na początek kontenera czatu
+        isPlayerDockedToChat = true;
+        toggleChatDockBtn.textContent = 'Odeślij TTV z czatu';
+        twitchChatIframe.style.height = `calc(100% - ${finalHeight}px)`; // Czat zajmuje resztę miejsca
+        twitchChatIframe.style.top = `${finalHeight}px`; 
+        twitchChatIframe.style.position = 'relative'; 
+    } else {
+        // Jeśli nie jest dokowany lub oddokowujemy
+        if (isPlayerDockedToChat) {
+            mainContent.appendChild(twitchPlayer); // Przenieś player z powrotem do mainContent
+            twitchPlayer.style.position = 'absolute'; // Przywróć pozycję absolutną
+            isPlayerDockedToChat = false;
+            toggleChatDockBtn.textContent = 'Dokuj TTV nad czat';
+            twitchChatIframe.style.height = `100%`;
+            twitchChatIframe.style.top = `0px`;
+            twitchChatIframe.style.position = 'static'; 
+
+            // Przywróć ostatni niezadokowany rozmiar
+            finalWidth = lastUndockedTwitchWidth;
+            finalHeight = lastUndockedTwitchHeight;
+        } else {
+            // Normalne skalowanie i ograniczenia, gdy nie jest zadokowany
+            finalWidth = Math.min(Math.max(newWidth, minTwitchWidth), maxTwitchWidth);
+            finalHeight = (finalWidth * 9) / 16;
+            finalHeight = Math.min(Math.max(finalHeight, minTwitchHeight), maxTwitchHeight);
+
+            // Zapisz rozmiar przed dokowaniem
+            lastUndockedTwitchWidth = finalWidth;
+            lastUndockedTwitchHeight = finalHeight;
+        }
+
+        // Obliczanie nowej pozycji dla niedokowanego playera
+        if (newPosition) {
+            const kickPlayerRect = document.getElementById('kickPlayer').getBoundingClientRect();
+            const padding = 10; 
+
+            let targetLeft, targetTop;
+
+            switch (newPosition) {
+                case 'topLeft':
+                    targetLeft = kickPlayerRect.left + padding;
+                    targetTop = kickPlayerRect.top + padding;
+                    currentTwitchPosition = 'topLeft';
+                    break;
+                case 'topRight':
+                    targetLeft = kickPlayerRect.right - finalWidth - padding;
+                    targetTop = kickPlayerRect.top + padding;
+                    currentTwitchPosition = 'topRight';
+                    break;
+                case 'bottomLeft':
+                    targetLeft = kickPlayerRect.left + padding;
+                    targetTop = kickPlayerRect.bottom - finalHeight - padding;
+                    currentTwitchPosition = 'bottomLeft';
+                    break;
+                case 'bottomRight':
+                    targetLeft = kickPlayerRect.right - finalWidth - padding;
+                    targetTop = kickPlayerRect.bottom - finalHeight - padding;
+                    currentTwitchPosition = 'bottomRight';
+                    break;
+                default:
+                    const currentRect = twitchPlayer.getBoundingClientRect();
+                    targetLeft = currentRect.left;
+                    targetTop = currentRect.top;
+                    break;
+            }
+
+            const mainContentRect = mainContent.getBoundingClientRect();
+            twitchPlayer.style.left = `${targetLeft - mainContentRect.left}px`;
+            twitchPlayer.style.top = `${targetTop - mainContentRect.top}px`;
+        }
+    }
+
+    // Zastosuj nowy rozmiar (dla obu przypadków: dokowany i niedokowany)
     twitchPlayer.style.width = `${finalWidth}px`;
     twitchPlayer.style.height = `${finalHeight}px`;
 
@@ -114,70 +193,6 @@ function updateTwitchPlayer(newWidth = twitchPlayer.offsetWidth, newHeight = twi
         twitchPlayer.style.opacity = '0';
     } else {
         twitchPlayer.style.opacity = '1';
-    }
-
-    // Obliczanie nowej pozycji
-    if (newPosition) {
-        const kickPlayerRect = document.getElementById('kickPlayer').getBoundingClientRect();
-        const padding = 10; 
-
-        let targetLeft, targetTop;
-
-        switch (newPosition) {
-            case 'topLeft':
-                targetLeft = kickPlayerRect.left + padding;
-                targetTop = kickPlayerRect.top + padding;
-                currentTwitchPosition = 'topLeft'; // Aktualizuj, że jest na tej pozycji
-                break;
-            case 'topRight':
-                targetLeft = kickPlayerRect.right - finalWidth - padding;
-                targetTop = kickPlayerRect.top + padding;
-                currentTwitchPosition = 'topRight'; // Aktualizuj, że jest na tej pozycji
-                break;
-            case 'bottomLeft':
-                targetLeft = kickPlayerRect.left + padding;
-                targetTop = kickPlayerRect.bottom - finalHeight - padding;
-                currentTwitchPosition = 'bottomLeft'; // Aktualizuj, że jest na tej pozycji
-                break;
-            case 'bottomRight':
-                targetLeft = kickPlayerRect.right - finalWidth - padding;
-                targetTop = kickPlayerRect.bottom - finalHeight - padding;
-                currentTwitchPosition = 'bottomRight'; // Aktualizuj, że jest na tej pozycji
-                break;
-            case 'docked': 
-                const chatSidebarRect = chatSidebar.getBoundingClientRect(); 
-                targetLeft = chatSidebarRect.left; 
-                targetTop = chatSidebarRect.top;
-                currentTwitchPosition = 'docked'; // Aktualizuj, że jest zadokowany
-                break;
-            default:
-                // Jeżeli pozycja nie jest podana, użyj aktualnej lub domyślnej
-                const currentRect = twitchPlayer.getBoundingClientRect();
-                targetLeft = currentRect.left;
-                targetTop = currentRect.top;
-                break;
-        }
-
-        const mainContentRect = mainContent.getBoundingClientRect();
-        twitchPlayer.style.left = `${targetLeft - mainContentRect.left}px`;
-        twitchPlayer.style.top = `${targetTop - mainContentRect.top}px`;
-    }
-
-    // Obsługa stanu dokowania
-    if (newPosition === 'docked') {
-        isPlayerDockedToChat = true;
-        toggleChatDockBtn.textContent = 'Odeślij TTV z czatu';
-        const playerHeightOnDock = twitchPlayer.offsetHeight;
-        twitchChatIframe.style.height = `calc(100% - ${playerHeightOnDock}px)`;
-        twitchChatIframe.style.top = `${playerHeightOnDock}px`; 
-        twitchChatIframe.style.position = 'relative'; 
-    } else if (isPlayerDockedToChat && newPosition !== 'docked') { 
-        // Oddokowanie - upewnij się, że czat wraca do pełnej wysokości
-        isPlayerDockedToChat = false;
-        toggleChatDockBtn.textContent = 'Dokuj TTV nad czat';
-        twitchChatIframe.style.height = `100%`;
-        twitchChatIframe.style.top = `0px`;
-        twitchChatIframe.style.position = 'static'; 
     }
 
     setTimeout(() => {
@@ -190,9 +205,8 @@ function updateTwitchPlayer(newWidth = twitchPlayer.offsetWidth, newHeight = twi
 
 shrinkTwitchPlayerBtn.addEventListener('click', () => {
     if (isGlobalAnimating) return;
-    // Jeżeli jest zadokowany, nie pozwól na pomniejszanie/powiększanie
     if (isPlayerDockedToChat) {
-        alert('Aby zmienić rozmiar, najpierw odeślij TTV z czatu.'); // Wyświetl alert
+        alert('Aby zmienić rozmiar, najpierw odeślij TTV z czatu.');
         toggleOptionsMenu();
         return;
     }
@@ -200,9 +214,8 @@ shrinkTwitchPlayerBtn.addEventListener('click', () => {
 });
 expandTwitchPlayerBtn.addEventListener('click', () => {
     if (isGlobalAnimating) return;
-     // Jeżeli jest zadokowany, nie pozwól na pomniejszanie/powiększanie
     if (isPlayerDockedToChat) {
-        alert('Aby zmienić rozmiar, najpierw odeślij TTV z czatu.'); // Wyświetl alert
+        alert('Aby zmienić rozmiar, najpierw odeślij TTV z czatu.');
         toggleOptionsMenu();
         return;
     }
@@ -211,44 +224,29 @@ expandTwitchPlayerBtn.addEventListener('click', () => {
 
 positionTopLeftBtn.addEventListener('click', () => {
     if (isGlobalAnimating) return;
-    if (isPlayerDockedToChat) { // Odeślij jeśli zadokowany
-        updateTwitchPlayer(defaultTwitchWidth, defaultTwitchHeight, 'topLeft'); 
-    } else {
-        updateTwitchPlayer(twitchPlayer.offsetWidth, twitchPlayer.offsetHeight, 'topLeft');
-    }
+    // Pozycjonowanie zawsze oddokowuje i przywraca domyślny rozmiar
+    updateTwitchPlayer(defaultTwitchWidth, defaultTwitchHeight, 'topLeft'); 
 });
 positionTopRightBtn.addEventListener('click', () => {
     if (isGlobalAnimating) return;
-    if (isPlayerDockedToChat) {
-        updateTwitchPlayer(defaultTwitchWidth, defaultTwitchHeight, 'topRight'); 
-    } else {
-        updateTwitchPlayer(twitchPlayer.offsetWidth, twitchPlayer.offsetHeight, 'topRight');
-    }
+    updateTwitchPlayer(defaultTwitchWidth, defaultTwitchHeight, 'topRight'); 
 });
 positionBottomLeftBtn.addEventListener('click', () => {
     if (isGlobalAnimating) return;
-    if (isPlayerDockedToChat) {
-        updateTwitchPlayer(defaultTwitchWidth, defaultTwitchHeight, 'bottomLeft'); 
-    } else {
-        updateTwitchPlayer(twitchPlayer.offsetWidth, twitchPlayer.offsetHeight, 'bottomLeft');
-    }
+    updateTwitchPlayer(defaultTwitchWidth, defaultTwitchHeight, 'bottomLeft'); 
 });
 positionBottomRightBtn.addEventListener('click', () => {
     if (isGlobalAnimating) return;
-    if (isPlayerDockedToChat) {
-        updateTwitchPlayer(defaultTwitchWidth, defaultTwitchHeight, 'bottomRight'); 
-    } else {
-        updateTwitchPlayer(twitchPlayer.offsetWidth, twitchPlayer.offsetHeight, 'bottomRight');
-    }
+    updateTwitchPlayer(defaultTwitchWidth, defaultTwitchHeight, 'bottomRight'); 
 });
 
 // --- Funkcjonalność DOKOWANIA ---
 toggleChatDockBtn.addEventListener('click', () => {
-    if (isGlobalAnimating) return;
+    if (isGlobalAnimating && !isPlayerDockedToChat) return; // Zapobiegaj dokowaniu, jeśli jest już animacja, chyba że oddokowujemy
 
     if (isPlayerDockedToChat) {
         // Jeśli jest zadokowany, odeślij na ostatnią zapamiętaną pozycję lub topLeft
-        updateTwitchPlayer(defaultTwitchWidth, defaultTwitchHeight, currentTwitchPosition === 'docked' ? 'topLeft' : currentTwitchPosition); 
+        updateTwitchPlayer(lastUndockedTwitchWidth, lastUndockedTwitchHeight, currentTwitchPosition === 'docked' ? 'topLeft' : currentTwitchPosition); 
     } else {
         if (isChatHidden) {
             toggleChatVisibility(true); 
@@ -300,7 +298,7 @@ function toggleChatVisibility(fromButton = true) {
         isChatHidden = true;
         // Jeśli player był zadokowany, po ukryciu czatu powinien wrócić na domyślną pozycję
         if (isPlayerDockedToChat) {
-            updateTwitchPlayer(defaultTwitchWidth, defaultTwitchHeight, 'topLeft'); 
+            updateTwitchPlayer(lastUndockedTwitchWidth, lastUndockedTwitchHeight, currentTwitchPosition === 'docked' ? 'topLeft' : currentTwitchPosition); 
         }
     }
     
@@ -309,8 +307,7 @@ function toggleChatVisibility(fromButton = true) {
         adjustKickPlayerSize(); 
         // Jeżeli Twitch Player nie jest zadokowany, przelicz jego pozycję
         if (!isPlayerDockedToChat) {
-            // Wywołaj updateTwitchPlayer z jego obecnym rozmiarem i zapamiętaną pozycją
-            updateTwitchPlayer(twitchPlayer.offsetWidth, twitchPlayer.offsetHeight, currentTwitchPosition);
+            updateTwitchPlayer(twitchPlayer.offsetWidth, twitchPlayer.offsetHeight, currentTwitchPosition); 
         }
         setGlobalAnimationState(false);
     }, ANIMATION_DURATION); 
@@ -350,7 +347,7 @@ document.addEventListener('fullscreenchange', () => {
         adjustKickPlayerSize(); 
         // Po wyjściu z pełnego ekranu, przelicz pozycję Twitcha
         if (!isPlayerDockedToChat) {
-            updateTwitchPlayer(twitchPlayer.offsetWidth, twitchPlayer.offsetHeight, currentTwitchPosition);
+            updateTwitchPlayer(twitchPlayer.offsetWidth, twitchPlayer.offsetHeight, currentTwitchPosition); 
         }
         setGlobalAnimationState(false); 
     }, ANIMATION_DURATION); 
