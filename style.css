@@ -1,7 +1,7 @@
 body {
     margin: 0;
     overflow-x: hidden; 
-    background-color: #1a1a1a; /* Ciemniejszy kolor tła */
+    background-color: #1a1a1a;
     display: flex;
     justify-content: center;
     font-family: Arial, sans-serif;
@@ -15,6 +15,7 @@ body {
     height: 100%; 
     justify-content: space-between; 
     align-items: flex-start; 
+    flex-direction: row; /* Domyślnie w rzędzie dla dużych ekranów */
 }
 
 #mainContent { 
@@ -24,7 +25,7 @@ body {
     position: relative; 
     padding: 10px; 
     box-sizing: border-box; 
-    background-color: #0d0d0d; /* Jeszcze ciemniejsze tło dla głównej zawartości */
+    background-color: #0d0d0d;
 }
 
 #kickPlayer {
@@ -39,11 +40,11 @@ body {
     height: 240px;
     top: 10px;
     left: 10px;
-    border: 2px solid #333; /* Ciemniejsza ramka */
+    border: 2px solid #333;
     z-index: 100; 
     transition: top 0.3s ease, left 0.3s ease, width 0.3s ease, height 0.3s ease, opacity 0.3s ease; 
     opacity: 1; 
-    background-color: #000; /* Upewnij się, że tło playera też jest ciemne */
+    background-color: #000;
 }
 .controls { display: none !important; }
 
@@ -53,9 +54,9 @@ body {
     flex-direction: row; 
     width: 350px; 
     height: 100vh;
-    border-left: 2px solid #333; /* Ciemniejsza ramka */
+    border-left: 2px solid #333;
     background-color: #1a1a1a;
-    transition: width 0.3s ease; 
+    transition: width 0.3s ease, height 0.3s ease; /* Dodano height do transition */
     overflow: hidden; 
     position: relative; 
     flex-shrink: 0; 
@@ -63,6 +64,7 @@ body {
 
 #chatSidebar.hidden {
     width: 0; 
+    height: 100vh; /* Zapewnia, że nadal zajmuje wysokość, nawet gdy szerokość jest 0 */
 }
 
 #chatIframeContainer {
@@ -90,9 +92,9 @@ body {
     position: fixed;
     bottom: 20px;
     left: 20px;
-    background: #333; /* Ciemniejszy kolor tła */
+    background: #333;
     color: white;
-    border: 2px solid #555; /* Ciemniejsza ramka */
+    border: 2px solid #555;
     border-radius: 50%; 
     width: 50px;
     height: 50px;
@@ -103,12 +105,12 @@ body {
     cursor: pointer;
     z-index: 200; 
     transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.3s ease; 
-    opacity: 0.8; /* Większa widoczność domyślna */
+    opacity: 0.8; 
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); 
 }
 
 #optionsToggleBtn:hover {
-    background: #444; /* Ciemniejszy hover */
+    background: #444;
     border-color: #777;
     opacity: 1; 
     transform: scale(1.05); 
@@ -119,19 +121,19 @@ body {
     position: fixed;
     bottom: 80px; 
     left: 20px;
-    background: #222; /* Ciemniejszy kolor tła */
-    border: 1px solid #444; /* Ciemniejsza ramka */
+    background: #222;
+    border: 1px solid #444;
     border-radius: 8px;
-    padding: 15px; /* Większy padding */
+    padding: 15px;
     display: flex;
     flex-direction: column;
-    gap: 15px; /* Większa przerwa między grupami */
+    gap: 15px;
     z-index: 199; 
     opacity: 0;
     visibility: hidden;
     transform: translateY(20px); 
     transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.7); /* Mocniejszy cień */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.7); 
 }
 
 #optionsMenu.show {
@@ -143,8 +145,8 @@ body {
 .menu-section {
     display: flex;
     flex-direction: column;
-    gap: 8px; /* Przerwa między wierszami/grupami kolumn */
-    border-bottom: 1px solid #333; /* Ciemniejsza linia podziału */
+    gap: 8px;
+    border-bottom: 1px solid #333;
     padding-bottom: 10px;
 }
 
@@ -155,34 +157,34 @@ body {
 
 .menu-group-row {
     display: flex;
-    flex-wrap: wrap; /* Zezwól na zawijanie, jeśli jest za mało miejsca */
-    gap: 8px; /* Przerwa między przyciskami w rzędzie */
+    flex-wrap: wrap; 
+    gap: 8px;
 }
 
 .menu-group-column {
     display: flex;
     flex-direction: column;
-    gap: 8px; /* Przerwa między przyciskami w kolumnie */
+    gap: 8px;
 }
 
 #optionsMenu button {
-    background: #3a3a3a; /* Ciemniejszy kolor tła przycisków */
+    background: #3a3a3a;
     color: white;
     border: none;
-    padding: 10px 12px; /* Mniejszy padding dla lepszego dopasowania */
+    padding: 10px 12px;
     border-radius: 6px; 
     cursor: pointer;
-    font-size: 0.9em; /* Nieco mniejsza czcionka */
+    font-size: 0.9em;
     text-align: left; 
     transition: background-color 0.2s ease, transform 0.1s ease; 
     white-space: nowrap; 
     display: flex; 
     align-items: center; 
-    gap: 8px; /* Mniejsza przerwa między ikoną a tekstem */
+    gap: 8px;
 }
 
 #optionsMenu button:hover {
-    background: #4a4a4a; /* Ciemniejszy hover */
+    background: #4a4a4a;
     transform: translateX(2px); 
 }
 
@@ -191,8 +193,112 @@ body {
 }
 
 .disabled-button {
-    opacity: 0.4 !important; /* Mniejsza przezroczystość dla wyłączonych przycisków */
+    opacity: 0.4 !important; 
     cursor: not-allowed !important;
     box-shadow: none !important; 
     transform: none !important; 
+}
+
+/* ========================================= */
+/* === MEDIA QUERIES DLA TELEFONÓW I TABLETÓW === */
+/* ========================================= */
+
+@media (max-width: 768px) { /* Typowy breakpoint dla tabletów w pionie i telefonów */
+    #globalContainer {
+        flex-direction: column; /* Układanie elementów w kolumnie */
+        height: auto; /* Pozwól kontenerowi dostosować wysokość */
+    }
+
+    #mainContent {
+        width: 100%; /* Główna zawartość zajmuje całą szerokość */
+        height: auto;
+        padding: 5px; /* Mniejszy padding */
+    }
+
+    #kickPlayer {
+        height: auto; /* Pozwól wysokości się dopasować, szerokość 100% */
+        min-height: 200px; /* Minimalna wysokość, aby nie był za mały */
+    }
+
+    #twitchPlayer {
+        position: static; /* Zmień pozycjonowanie na statyczne, aby przepływał normalnie */
+        width: 100% !important; /* Twitch player zawsze na pełną szerokość */
+        height: auto !important; /* Wysokość dopasowana do szerokości */
+        margin-top: 10px; /* Dodaj odstęp, jeśli jest widoczny */
+        border: none; /* Usuń ramkę dla mniejszych ekranów */
+        display: none; /* Domyślnie ukryj Twitch playera na telefonie */
+        opacity: 1 !important; /* Upewnij się, że opacity nie przeszkadza */
+        transform: none !important; /* Usuń wszelkie transformacje */
+        top: auto !important; /* Resetuj pozycje */
+        left: auto !important;
+    }
+    
+    /* Pokaż Twitch playera, gdy jest zadokowany/wybrany, jeśli chcesz by był widoczny poniżej Kicka */
+    #twitchPlayer.mobile-visible {
+        display: block;
+    }
+
+    #chatSidebar {
+        width: 100%; /* Czat zajmuje całą szerokość */
+        height: auto; /* Wysokość czatu dopasowana do zawartości */
+        border-left: none; /* Usuń lewą ramkę */
+        border-top: 2px solid #333; /* Dodaj górną ramkę */
+        min-height: 300px; /* Minimalna wysokość czatu na telefonie */
+    }
+
+    #chatSidebar.hidden {
+        min-height: 0; /* Minimalna wysokość 0, gdy ukryty */
+        height: 0; /* Całkowicie ukryj czat */
+    }
+
+    #twitchChatIframe {
+        height: 100%;
+    }
+
+    /* Przycisk opcji na małych ekranach */
+    #optionsToggleBtn {
+        bottom: 10px;
+        left: 10px;
+        width: 45px;
+        height: 45px;
+        font-size: 1.8em;
+    }
+
+    /* Menu opcji na małych ekranach */
+    #optionsMenu {
+        bottom: 65px; /* Przesuń menu, aby nie kolidowało z przyciskiem */
+        left: 10px;
+        right: 10px; /* Rozciągnij menu na całą szerokość */
+        width: auto; /* Usuń stałą szerokość */
+        padding: 10px;
+        gap: 10px; /* Mniejszy odstęp */
+    }
+
+    .menu-section {
+        gap: 6px;
+        padding-bottom: 8px;
+    }
+    .menu-group-row {
+        flex-direction: column; /* Przyciski w kolumnie na małych ekranach */
+        gap: 6px;
+    }
+
+    #optionsMenu button {
+        width: 100%; /* Przyciski na całą szerokość */
+        text-align: center; /* Wyśrodkuj tekst */
+        font-size: 0.9em;
+        justify-content: center; /* Wyśrodkuj zawartość */
+        padding: 8px 10px;
+    }
+}
+
+/* Media query dla bardzo małych ekranów (np. iPhone SE) */
+@media (max-width: 480px) {
+    #optionsMenu {
+        font-size: 0.8em;
+    }
+    #optionsMenu button {
+        font-size: 0.85em;
+        padding: 7px 8px;
+    }
 }
