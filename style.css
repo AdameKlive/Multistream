@@ -1,7 +1,7 @@
 body {
     margin: 0;
     overflow-x: hidden; 
-    background-color: black;
+    background-color: #1a1a1a; /* Ciemniejszy kolor tła */
     display: flex;
     justify-content: center;
     font-family: Arial, sans-serif;
@@ -24,6 +24,7 @@ body {
     position: relative; 
     padding: 10px; 
     box-sizing: border-box; 
+    background-color: #0d0d0d; /* Jeszcze ciemniejsze tło dla głównej zawartości */
 }
 
 #kickPlayer {
@@ -38,10 +39,11 @@ body {
     height: 240px;
     top: 10px;
     left: 10px;
-    border: 2px solid white;
+    border: 2px solid #333; /* Ciemniejsza ramka */
     z-index: 100; 
     transition: top 0.3s ease, left 0.3s ease, width 0.3s ease, height 0.3s ease, opacity 0.3s ease; 
     opacity: 1; 
+    background-color: #000; /* Upewnij się, że tło playera też jest ciemne */
 }
 .controls { display: none !important; }
 
@@ -51,7 +53,7 @@ body {
     flex-direction: row; 
     width: 350px; 
     height: 100vh;
-    border-left: 2px solid white;
+    border-left: 2px solid #333; /* Ciemniejsza ramka */
     background-color: #1a1a1a;
     transition: width 0.3s ease; 
     overflow: hidden; 
@@ -88,9 +90,9 @@ body {
     position: fixed;
     bottom: 20px;
     left: 20px;
-    background: transparent; 
+    background: #333; /* Ciemniejszy kolor tła */
     color: white;
-    border: 2px solid rgba(255, 255, 255, 0.3); 
+    border: 2px solid #555; /* Ciemniejsza ramka */
     border-radius: 50%; 
     width: 50px;
     height: 50px;
@@ -101,13 +103,13 @@ body {
     cursor: pointer;
     z-index: 200; 
     transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.3s ease; 
-    opacity: 0.5; 
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); 
+    opacity: 0.8; /* Większa widoczność domyślna */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); 
 }
 
 #optionsToggleBtn:hover {
-    background: rgba(255, 255, 255, 0.1); 
-    border-color: rgba(255, 255, 255, 0.5);
+    background: #444; /* Ciemniejszy hover */
+    border-color: #777;
     opacity: 1; 
     transform: scale(1.05); 
 }
@@ -117,19 +119,19 @@ body {
     position: fixed;
     bottom: 80px; 
     left: 20px;
-    background: linear-gradient(145deg, rgba(0, 0, 0, 0.9), rgba(20, 20, 20, 0.9)); 
-    border: 1px solid rgba(255, 255, 255, 0.2); 
+    background: #222; /* Ciemniejszy kolor tła */
+    border: 1px solid #444; /* Ciemniejsza ramka */
     border-radius: 8px;
-    padding: 10px;
+    padding: 15px; /* Większy padding */
     display: flex;
     flex-direction: column;
-    gap: 8px; 
+    gap: 15px; /* Większa przerwa między grupami */
     z-index: 199; 
     opacity: 0;
     visibility: hidden;
     transform: translateY(20px); 
     transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5); 
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.7); /* Mocniejszy cień */
 }
 
 #optionsMenu.show {
@@ -138,45 +140,58 @@ body {
     transform: translateY(0);
 }
 
+.menu-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* Przerwa między wierszami/grupami kolumn */
+    border-bottom: 1px solid #333; /* Ciemniejsza linia podziału */
+    padding-bottom: 10px;
+}
+
+.menu-section:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.menu-group-row {
+    display: flex;
+    flex-wrap: wrap; /* Zezwól na zawijanie, jeśli jest za mało miejsca */
+    gap: 8px; /* Przerwa między przyciskami w rzędzie */
+}
+
+.menu-group-column {
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* Przerwa między przyciskami w kolumnie */
+}
+
 #optionsMenu button {
-    background: rgba(255, 255, 255, 0.08); 
+    background: #3a3a3a; /* Ciemniejszy kolor tła przycisków */
     color: white;
     border: none;
-    padding: 10px 15px; 
+    padding: 10px 12px; /* Mniejszy padding dla lepszego dopasowania */
     border-radius: 6px; 
     cursor: pointer;
-    font-size: 0.95em; 
+    font-size: 0.9em; /* Nieco mniejsza czcionka */
     text-align: left; 
     transition: background-color 0.2s ease, transform 0.1s ease; 
     white-space: nowrap; 
     display: flex; 
     align-items: center; 
-    gap: 10px; 
+    gap: 8px; /* Mniejsza przerwa między ikoną a tekstem */
 }
 
 #optionsMenu button:hover {
-    background: rgba(255, 255, 255, 0.15); 
-    transform: translateX(3px); 
+    background: #4a4a4a; /* Ciemniejszy hover */
+    transform: translateX(2px); 
 }
 
 #optionsMenu button:active {
     transform: translateY(1px); 
 }
 
-#optionsMenu .menu-group {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding-bottom: 8px;
-    margin-bottom: 8px;
-}
-
-#optionsMenu .menu-group:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
-    margin-bottom: 0;
-}
-
 .disabled-button {
-    opacity: 0.5 !important; 
+    opacity: 0.4 !important; /* Mniejsza przezroczystość dla wyłączonych przycisków */
     cursor: not-allowed !important;
     box-shadow: none !important; 
     transform: none !important; 
