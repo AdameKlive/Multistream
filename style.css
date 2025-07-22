@@ -1,54 +1,54 @@
 body {
     margin: 0;
-    overflow-x: hidden; 
+    overflow-x: hidden;
     background-color: #1a1a1a;
     display: flex;
     justify-content: center;
     font-family: Arial, sans-serif;
     color: white;
-    height: 100vh; 
+    height: 100vh;
 }
 
-#globalContainer { 
-    display: flex; 
-    width: 100%; 
-    height: 100%; 
-    justify-content: space-between; 
-    align-items: flex-start; 
-    flex-direction: row; 
-    z-index: 1; 
-}
-
-#mainContent { 
-    flex-grow: 1; 
+#globalContainer {
     display: flex;
-    flex-direction: column; 
-    position: relative; 
-    padding: 10px; 
-    box-sizing: border-box; 
+    width: 100%;
+    height: 100%;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-direction: row;
+    z-index: 1;
+}
+
+#mainContent {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    padding: 10px;
+    box-sizing: border-box;
     background-color: #0d0d0d;
-    z-index: 1; 
+    z-index: 1;
 }
 
 #kickPlayer {
-    width: 100%; 
-    height: 100%; 
+    width: 100%;
+    height: 100%;
     background-color: black;
-    z-index: 10; 
+    z-index: 10;
 }
 
 #twitchPlayer {
-    position: absolute; /* Domyślna pozycja dla desktopu */
+    position: absolute;
     width: 427px;
     height: 240px;
     top: 10px;
     left: 10px;
     border: 2px solid #333;
-    z-index: 50; 
-    transition: top 0.3s ease, left 0.3s ease, width 0.3s ease, height 0.3s ease, opacity 0.3s ease; 
-    opacity: 1; 
+    z-index: 50;
+    transition: top 0.3s ease, left 0.3s ease, width 0.3s ease, height 0.3s ease, opacity 0.3s ease;
+    opacity: 1;
     background-color: #000;
-    pointer-events: auto; 
+    pointer-events: auto;
 }
 #twitchPlayer.hidden-interaction {
     pointer-events: none;
@@ -56,52 +56,55 @@ body {
 .controls { display: none !important; }
 
 /* === Sekcja czatu Twitcha - CHATSIDEBAR === */
-#chatSidebar { 
+#chatSidebar {
     display: flex;
-    flex-direction: column; 
-    width: 350px; 
+    flex-direction: column;
+    width: 350px;
     height: 100vh;
     border-left: 2px solid #333;
     background-color: #1a1a1a;
-    transition: width 0.3s ease, height 0.3s ease; 
-    overflow: hidden; 
-    position: relative; 
-    flex-shrink: 0; 
-    z-index: 20; 
+    transition: width 0.3s ease, height 0.3s ease;
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+    z-index: 20;
 }
 
 #chatSidebar.hidden {
-    width: 0; 
-    height: 100vh; 
+    width: 0;
+    height: 100vh;
 }
 
 #chatIframeContainer {
-    flex-grow: 1; 
+    flex-grow: 1;
     display: flex;
-    flex-direction: column; 
-    overflow: hidden; 
-    transition: opacity 0.3s ease; 
-    position: relative; 
-    height: 100%; 
+    flex-direction: column;
+    overflow: hidden;
+    transition: opacity 0.3s ease;
+    position: relative; /* Ważne dla pozycjonowania iframe'a */
+    height: 100%;
 }
 
 #chatSidebar.hidden #chatIframeContainer {
-    opacity: 0; 
+    opacity: 0;
 }
 
-#twitchChatIframe { 
-    flex-grow: 1; 
+#twitchChatIframe {
+    flex-grow: 1;
     width: 100%;
-    height: 100%; 
+    height: 100%; /* Domyślna wysokość na 100% */
     border: none;
-    background-color: transparent; 
-    z-index: 1; 
-    pointer-events: auto; 
+    background-color: transparent;
+    z-index: 1;
+    pointer-events: auto;
+    position: absolute; /* Zmieniamy na absolute, aby poprawnie pozycjonować pod dokowanym TTV */
+    top: 0; /* Domyślnie na górze */
+    left: 0;
 }
 
-#chatSidebar > div { 
+#chatSidebar > div {
     position: relative;
-    z-index: 2; 
+    z-index: 2;
 }
 
 .chat-toggle-buttons { display: none !important; }
@@ -109,52 +112,52 @@ body {
 /* === GLOBALNY PRZYCISK OPCJI (ZĘBATKA) === */
 #optionsToggleBtn {
     position: fixed;
-    bottom: 20px; /* Domyślnie na dole dla desktopu */
+    bottom: 20px;
     left: 20px;
     background: #333;
     color: white;
     border: 2px solid #555;
-    border-radius: 50%; 
+    border-radius: 50%;
     width: 50px;
     height: 50px;
     display: flex;
-    justify-content: center; 
-    align-items: center; 
+    justify-content: center;
+    align-items: center;
     font-size: 2em;
     cursor: pointer;
-    z-index: 200; 
-    transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.3s ease; 
-    opacity: 0.3; 
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); 
+    z-index: 200;
+    transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.3s ease;
+    opacity: 0.3;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
 }
 
 #optionsToggleBtn:hover {
     background: #444;
     border-color: #777;
-    opacity: 1; 
-    transform: scale(1.05); 
+    opacity: 1;
+    transform: scale(1.05);
 }
 
 /* === MENU OPCJI === */
 #optionsMenu {
     position: fixed;
-    bottom: 80px; /* Domyślnie nad przyciskiem dla desktopu */
+    bottom: 80px; /* Bliżej przycisku, 20px od button.bottom + button.height(50) + 10px padding */
     left: 20px;
     background: #222;
     border: 1px solid #444;
     border-radius: 8px;
-    padding: 10px; 
+    padding: 10px;
     display: flex;
     flex-direction: column;
-    gap: 8px; 
-    z-index: 199; 
+    gap: 8px;
+    z-index: 199;
     opacity: 0;
     visibility: hidden;
-    transform: translateY(20px); 
+    transform: translateY(20px);
     transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.7); 
-    width: 200px; 
-    box-sizing: border-box; 
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.7);
+    width: 200px;
+    box-sizing: border-box;
 }
 
 #optionsMenu.show {
@@ -166,9 +169,9 @@ body {
 .menu-section {
     display: flex;
     flex-direction: column;
-    gap: 6px; 
+    gap: 6px;
     border-bottom: 1px solid #333;
-    padding-bottom: 8px; 
+    padding-bottom: 8px;
 }
 
 .menu-section:last-child {
@@ -178,60 +181,60 @@ body {
 
 .menu-group-row {
     display: flex;
-    flex-wrap: wrap; 
-    gap: 6px; 
-    justify-content: space-between; 
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: space-between;
 }
 
 .menu-group-column {
     display: flex;
     flex-direction: column;
-    gap: 6px; 
+    gap: 6px;
 }
 
 #optionsMenu button {
     background: #3a3a3a;
     color: white;
     border: none;
-    padding: 8px 10px; 
-    border-radius: 6px; 
+    padding: 8px 10px;
+    border-radius: 6px;
     cursor: pointer;
-    font-size: 0.8em; 
-    text-align: center; 
-    transition: background-color 0.2s ease, transform 0.1s ease; 
-    white-space: nowrap; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    gap: 5px; 
-    flex-grow: 1; 
-    flex-basis: auto; 
-    min-width: 0; 
+    font-size: 0.8em;
+    text-align: center;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    flex-grow: 1;
+    flex-basis: auto;
+    min-width: 0;
 }
 
 .menu-group-row button {
-    flex-basis: calc(50% - 3px); 
-    min-width: 80px; 
+    flex-basis: calc(50% - 3px);
+    min-width: 80px;
 }
 
 .menu-group-column button {
-    width: 100%; 
+    width: 100%;
 }
 
 #optionsMenu button:hover {
     background: #4a4a4a;
-    transform: translateX(0); 
+    transform: translateX(0);
 }
 
 #optionsMenu button:active {
-    transform: translateY(1px); 
+    transform: translateY(1px);
 }
 
 .disabled-button {
-    opacity: 0.4 !important; 
+    opacity: 0.4 !important;
     cursor: not-allowed !important;
-    box-shadow: none !important; 
-    transform: none !important; 
+    box-shadow: none !important;
+    transform: none !important;
 }
 
 /* Klasa do ukrywania przycisków w menu na mobile */
@@ -243,129 +246,130 @@ body {
 /* === MEDIA QUERIES DLA TELEFONÓW I TABLETÓW === */
 /* ========================================= */
 
-@media (max-width: 768px) { 
+@media (max-width: 768px) {
     #globalContainer {
-        flex-direction: column; 
-        height: auto; 
+        flex-direction: column;
+        height: auto;
     }
 
     #mainContent {
-        width: 100%; 
+        width: 100%;
         height: auto;
-        padding: 5px; 
-        /* Usunięto position: relative; aby dać większą swobodę TwitchPlayerowi na mobile */
-        /* display: flex; flex-direction: column; pozostaje */
+        padding: 5px;
     }
 
     #kickPlayer {
-        width: 100%; 
-        height: auto; /* Pozwól wysokości się dopasować */
-        min-height: 200px; 
+        width: 100%;
+        height: auto;
+        min-height: 200px;
     }
 
     /* Twitch Player w trybie pionowym */
     #twitchPlayer {
-        position: static; /* Statyczny, aby płynął w dokumencie */
-        width: 100% !important; 
-        height: auto !important; 
-        margin-bottom: 10px; /* Odstęp od Kicka */
-        border: none; 
-        display: none; /* Domyślnie ukryj na mobile w obu orientacjach */
-        opacity: 1 !important; 
-        transform: none !important; 
-        top: auto !important; 
+        position: static;
+        width: 100% !important;
+        height: auto !important;
+        margin-bottom: 10px;
+        border: none;
+        display: none;
+        opacity: 1 !important;
+        transform: none !important;
+        top: auto !important;
         left: auto !important;
-        z-index: 1; 
-        pointer-events: none; 
-        order: -2; /* TTV będzie pierwszy w mainContent, jeśli widoczny */
+        z-index: 1;
+        pointer-events: none;
+        order: -2;
     }
-    
+
     #twitchPlayer.mobile-visible {
         display: block;
-        pointer-events: auto; 
+        pointer-events: auto;
     }
 
     #kickPlayer {
-        order: -1; /* Kick Player będzie drugi, pod TTV */
+        order: -1;
     }
 
     #chatSidebar {
-        width: 100%; 
-        height: auto; 
-        border-left: none; 
-        border-top: 2px solid #333; 
-        min-height: 250px; 
-        flex-shrink: 0; 
-        display: flex; 
+        width: 100%;
+        height: auto;
+        border-left: none;
+        border-top: 2px solid #333;
+        min-height: 250px;
+        flex-shrink: 0;
+        display: flex;
         flex-direction: column;
-        z-index: 20; 
-        order: 0; /* Czat będzie trzeci */
+        z-index: 20;
+        order: 0;
     }
-    
+
     #chatSidebar #twitchChatIframe {
-        margin-bottom: env(keyboard-inset-bottom, 0px); 
-        padding-bottom: 5px; 
+        margin-bottom: env(keyboard-inset-bottom, 0px);
+        padding-bottom: 5px;
         box-sizing: border-box;
     }
 
     #chatSidebar.hidden {
-        min-height: 0; 
-        height: 0; 
+        min-height: 0;
+        height: 0;
     }
 
-    #twitchChatIframe { 
-        flex-grow: 1; 
+    #twitchChatIframe {
+        flex-grow: 1;
         width: 100%;
-        height: 100%; 
+        height: 100%;
         border: none;
-        min-height: 150px; 
+        min-height: 150px;
         z-index: 1;
-        pointer-events: auto; 
+        pointer-events: auto;
+        position: static; /* Na mobile w pionie, czat jest statyczny */
+        top: auto;
+        left: auto;
     }
 
     /* Przycisk opcji na małych ekranach - GÓRA EKRANU */
     #optionsToggleBtn {
-        bottom: auto; /* Usuń dolne pozycjonowanie */
-        top: 10px; /* Przypnij do góry */
+        bottom: auto;
+        top: 10px;
         left: 10px;
         width: 45px;
         height: 45px;
         font-size: 1.8em;
-        opacity: 0.3; 
-        z-index: 200; 
+        opacity: 0.3;
+        z-index: 200;
     }
 
     /* MENU OPCJI NA MAŁYCH EKRANACH (dla trybu pionowego) */
     #optionsMenu {
-        bottom: auto; /* Usuń dolne pozycjonowanie */
-        top: 65px; /* Przypnij pod przycisk */
+        bottom: auto;
+        top: 65px;
         left: 10px;
-        right: 10px; 
-        width: auto; 
-        padding: 8px; 
-        gap: 8px; 
-        max-height: calc(100vh - 85px); /* Maksymalna wysokość dostosowana do góry */
-        overflow-y: auto; 
-        -webkit-overflow-scrolling: touch; 
-        z-index: 199; 
+        right: 10px;
+        width: auto;
+        padding: 8px;
+        gap: 8px;
+        max-height: calc(100vh - 85px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        z-index: 199;
     }
 
     .menu-section {
-        gap: 5px; 
-        padding-bottom: 7px; 
+        gap: 5px;
+        padding-bottom: 7px;
     }
     .menu-group-row {
-        flex-direction: column; 
-        gap: 5px; 
+        flex-direction: column;
+        gap: 5px;
     }
 
     #optionsMenu button {
-        width: 100%; 
-        text-align: center; 
-        font-size: 0.85em; 
-        justify-content: center; 
-        padding: 7px 8px; 
-        flex-basis: auto; 
+        width: 100%;
+        text-align: center;
+        font-size: 0.85em;
+        justify-content: center;
+        padding: 7px 8px;
+        flex-basis: auto;
         min-width: 0;
     }
 }
@@ -373,7 +377,7 @@ body {
 /* Media query dla bardzo małych ekranów (np. iPhone SE) */
 @media (max-width: 480px) {
     #optionsMenu button {
-        font-size: 0.8em; 
+        font-size: 0.8em;
         padding: 6px 7px;
     }
 }
@@ -381,81 +385,84 @@ body {
 /* === MEDIA QUERY DLA ORIENTACJI POZIOMEJ (LANDSCAPE) NA TELEFONACH === */
 @media (max-width: 768px) and (orientation: landscape) {
     #globalContainer {
-        flex-direction: row; 
+        flex-direction: row;
         height: 100vh;
-        align-items: stretch; 
+        align-items: stretch;
     }
 
     #mainContent {
         flex-grow: 1;
-        width: auto; 
+        width: auto;
         height: 100vh;
         padding: 5px;
         display: flex;
         flex-direction: column;
-        justify-content: center; 
+        justify-content: center;
     }
 
     #kickPlayer {
-        max-height: 80%; 
-        object-fit: contain; 
-        width: 100%; 
-        order: 0; /* Kick Player będzie pierwszy w trybie poziomym */
+        max-height: 80%;
+        object-fit: contain;
+        width: 100%;
+        order: 0;
     }
 
     /* Twitch Player w trybie poziomym - prawy górny róg Kicka, mały */
     #twitchPlayer {
-        position: absolute; /* Musi być absolutny do pozycjonowania w rogu */
+        position: absolute;
         width: auto !important; /* Pozwól JS ustawić rozmiar */
         height: auto !important; /* Pozwól JS ustawić rozmiar */
-        top: 10px; /* Domyślna pozycja w rogu mainContent, będzie dostosowana przez JS */
-        right: 10px; /* Domyślna pozycja w rogu mainContent, będzie dostosowana przez JS */
-        left: auto !important; /* Ważne, aby nie kolidować z lewym */
-        margin-top: 0; /* Usuń marginesy z trybu pionowego */
-        border: 1px solid #555; /* Dodaj cienką ramkę */
-        display: none; /* Domyślnie ukryj */
-        z-index: 60; /* Nad Kick Playerem, ale pod menu */
-        pointer-events: auto; /* Powinien być interaktywny, jeśli jest widoczny */
-        order: auto; /* Usuń kolejność z trybu pionowego */
+        top: 10px;
+        right: 10px;
+        left: auto !important;
+        margin-top: 0;
+        border: 1px solid #555;
+        display: none;
+        z-index: 60;
+        pointer-events: auto;
+        order: auto;
     }
     #twitchPlayer.mobile-visible {
-        display: block !important; 
+        display: block !important;
     }
 
 
     #chatSidebar {
-        width: 300px; 
-        min-width: 250px; 
-        height: 100vh; 
+        width: 300px;
+        min-width: 250px;
+        height: 100vh;
         border-left: 2px solid #333;
-        border-top: none; 
-        min-height: auto; 
-        z-index: 20; 
-        order: 1; /* Czat będzie drugi */
+        border-top: none;
+        min-height: auto;
+        z-index: 20;
+        order: 1;
     }
 
     #twitchChatIframe {
         height: 100%;
-        min-height: 0; 
-        pointer-events: auto; 
+        min-height: 0;
+        pointer-events: auto;
+        position: static; /* Na mobile w poziomie, czat jest statyczny */
+        top: auto;
+        left: auto;
     }
 
     /* Przycisk opcji na małych ekranach w trybie poziomym - nadal na górze */
     #optionsToggleBtn {
-        bottom: auto; 
-        top: 10px; 
+        bottom: auto;
+        top: 10px;
         left: 10px;
         z-index: 200;
     }
-    
+
     /* MENU OPCJI W TRYBIE POZIOMYM NA TELEFONACH - nadal pod przyciskiem, przewijane */
     #optionsMenu {
-        bottom: auto; 
-        top: 65px; 
+        bottom: auto;
+        top: 65px;
         left: 10px;
-        width: 180px; 
-        max-height: calc(100vh - 85px); 
-        right: auto; 
+        width: 180px;
+        max-height: calc(100vh - 85px);
+        right: auto;
         font-size: 0.9em;
         z-index: 199;
     }
@@ -464,7 +471,7 @@ body {
         padding: 6px 8px;
     }
     .menu-group-row {
-        flex-direction: column; 
+        flex-direction: column;
         gap: 4px;
     }
     .menu-section {
