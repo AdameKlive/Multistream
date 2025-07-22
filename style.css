@@ -15,7 +15,8 @@ body {
     height: 100%; 
     justify-content: space-between; 
     align-items: flex-start; 
-    flex-direction: row; /* Domyślnie w rzędzie dla dużych ekranów */
+    flex-direction: row; 
+    z-index: 1; 
 }
 
 #mainContent { 
@@ -26,32 +27,38 @@ body {
     padding: 10px; 
     box-sizing: border-box; 
     background-color: #0d0d0d;
+    z-index: 1; 
 }
 
 #kickPlayer {
     width: 100%; 
     height: 100%; 
     background-color: black;
+    z-index: 10; 
 }
 
 #twitchPlayer {
-    position: absolute;
+    position: absolute; /* Domyślna pozycja dla desktopu */
     width: 427px;
     height: 240px;
     top: 10px;
     left: 10px;
     border: 2px solid #333;
-    z-index: 100; 
+    z-index: 50; 
     transition: top 0.3s ease, left 0.3s ease, width 0.3s ease, height 0.3s ease, opacity 0.3s ease; 
     opacity: 1; 
     background-color: #000;
+    pointer-events: auto; 
+}
+#twitchPlayer.hidden-interaction {
+    pointer-events: none;
 }
 .controls { display: none !important; }
 
 /* === Sekcja czatu Twitcha - CHATSIDEBAR === */
 #chatSidebar { 
     display: flex;
-    flex-direction: row; 
+    flex-direction: column; 
     width: 350px; 
     height: 100vh;
     border-left: 2px solid #333;
@@ -60,6 +67,7 @@ body {
     overflow: hidden; 
     position: relative; 
     flex-shrink: 0; 
+    z-index: 20; 
 }
 
 #chatSidebar.hidden {
@@ -70,9 +78,11 @@ body {
 #chatIframeContainer {
     flex-grow: 1; 
     display: flex;
-    flex-direction: column;
+    flex-direction: column; 
     overflow: hidden; 
     transition: opacity 0.3s ease; 
+    position: relative; 
+    height: 100%; 
 }
 
 #chatSidebar.hidden #chatIframeContainer {
@@ -82,7 +92,16 @@ body {
 #twitchChatIframe { 
     flex-grow: 1; 
     width: 100%;
+    height: 100%; 
     border: none;
+    background-color: transparent; 
+    z-index: 1; 
+    pointer-events: auto; 
+}
+
+#chatSidebar > div { 
+    position: relative;
+    z-index: 2; 
 }
 
 .chat-toggle-buttons { display: none !important; }
@@ -90,7 +109,7 @@ body {
 /* === GLOBALNY PRZYCISK OPCJI (ZĘBATKA) === */
 #optionsToggleBtn {
     position: fixed;
-    bottom: 20px;
+    bottom: 20px; /* Domyślnie na dole dla desktopu */
     left: 20px;
     background: #333;
     color: white;
@@ -119,7 +138,7 @@ body {
 /* === MENU OPCJI === */
 #optionsMenu {
     position: fixed;
-    bottom: 80px; 
+    bottom: 80px; /* Domyślnie nad przyciskiem dla desktopu */
     left: 20px;
     background: #222;
     border: 1px solid #444;
@@ -215,6 +234,11 @@ body {
     transform: none !important; 
 }
 
+/* Klasa do ukrywania przycisków w menu na mobile */
+.hide-on-mobile-menu {
+    display: none !important;
+}
+
 /* ========================================= */
 /* === MEDIA QUERIES DLA TELEFONÓW I TABLETÓW === */
 /* ========================================= */
@@ -229,28 +253,40 @@ body {
         width: 100%; 
         height: auto;
         padding: 5px; 
+        /* Usunięto position: relative; aby dać większą swobodę TwitchPlayerowi na mobile */
+        /* display: flex; flex-direction: column; pozostaje */
     }
 
     #kickPlayer {
-        height: auto; 
+        width: 100%; 
+        height: auto; /* Pozwól wysokości się dopasować */
         min-height: 200px; 
     }
 
+    /* Twitch Player w trybie pionowym */
     #twitchPlayer {
-        position: static; 
+        position: static; /* Statyczny, aby płynął w dokumencie */
         width: 100% !important; 
         height: auto !important; 
-        margin-top: 10px; 
+        margin-bottom: 10px; /* Odstęp od Kicka */
         border: none; 
-        display: none; 
+        display: none; /* Domyślnie ukryj na mobile w obu orientacjach */
         opacity: 1 !important; 
         transform: none !important; 
         top: auto !important; 
         left: auto !important;
+        z-index: 1; 
+        pointer-events: none; 
+        order: -2; /* TTV będzie pierwszy w mainContent, jeśli widoczny */
     }
     
     #twitchPlayer.mobile-visible {
         display: block;
+        pointer-events: auto; 
+    }
+
+    #kickPlayer {
+        order: -1; /* Kick Player będzie drugi, pod TTV */
     }
 
     #chatSidebar {
@@ -258,10 +294,18 @@ body {
         height: auto; 
         border-left: none; 
         border-top: 2px solid #333; 
-        min-height: 250px; /* Zmniejszona minimalna wysokość czatu na mobile, aby dać więcej miejsca */
-        flex-shrink: 0; /* Zapobiega skurczeniu się czatu do 0, jeśli miejsce jest bardzo ograniczone */
-        display: flex; /* Upewnij się, że czat ma flex, aby jego zawartość się skalowała */
+        min-height: 250px; 
+        flex-shrink: 0; 
+        display: flex; 
         flex-direction: column;
+        z-index: 20; 
+        order: 0; /* Czat będzie trzeci */
+    }
+    
+    #chatSidebar #twitchChatIframe {
+        margin-bottom: env(keyboard-inset-bottom, 0px); 
+        padding-bottom: 5px; 
+        box-sizing: border-box;
     }
 
     #chatSidebar.hidden {
@@ -270,32 +314,40 @@ body {
     }
 
     #twitchChatIframe { 
-        flex-grow: 1; /* Pozwól iframe czatu rosnąć */
-        height: 100%; /* Upewnij się, że zajmuje całą wysokość kontenera */
-        min-height: 150px; /* Minimalna wysokość dla samego iframe'a czatu */
+        flex-grow: 1; 
+        width: 100%;
+        height: 100%; 
+        border: none;
+        min-height: 150px; 
+        z-index: 1;
+        pointer-events: auto; 
     }
 
-    /* Przycisk opcji na małych ekranach */
+    /* Przycisk opcji na małych ekranach - GÓRA EKRANU */
     #optionsToggleBtn {
-        bottom: 10px;
+        bottom: auto; /* Usuń dolne pozycjonowanie */
+        top: 10px; /* Przypnij do góry */
         left: 10px;
         width: 45px;
         height: 45px;
         font-size: 1.8em;
         opacity: 0.3; 
+        z-index: 200; 
     }
 
     /* MENU OPCJI NA MAŁYCH EKRANACH (dla trybu pionowego) */
     #optionsMenu {
-        bottom: 65px; 
+        bottom: auto; /* Usuń dolne pozycjonowanie */
+        top: 65px; /* Przypnij pod przycisk */
         left: 10px;
         right: 10px; 
         width: auto; 
         padding: 8px; 
         gap: 8px; 
-        max-height: calc(100vh - 85px); /* Maksymalna wysokość: cała wysokość widoku minus dolny przycisk + margines */
+        max-height: calc(100vh - 85px); /* Maksymalna wysokość dostosowana do góry */
         overflow-y: auto; 
         -webkit-overflow-scrolling: touch; 
+        z-index: 199; 
     }
 
     .menu-section {
@@ -329,75 +381,90 @@ body {
 /* === MEDIA QUERY DLA ORIENTACJI POZIOMEJ (LANDSCAPE) NA TELEFONACH === */
 @media (max-width: 768px) and (orientation: landscape) {
     #globalContainer {
-        flex-direction: row; /* W trybie poziomym spróbuj ułożyć obok siebie */
+        flex-direction: row; 
         height: 100vh;
-        align-items: stretch; /* Rozciągnij do pełnej wysokości */
+        align-items: stretch; 
     }
 
     #mainContent {
         flex-grow: 1;
-        width: auto; /* Pozwól mainContent na elastyczne rozszerzanie */
+        width: auto; 
         height: 100vh;
         padding: 5px;
         display: flex;
         flex-direction: column;
-        justify-content: center; /* Wyśrodkuj zawartość pionowo, jeśli to możliwe */
+        justify-content: center; 
     }
 
     #kickPlayer {
-        max-height: 80%; /* Ogranicz wysokość Kick Playera, aby zostawić miejsce */
-        object-fit: contain; /* Upewnij się, że wideo nie jest zniekształcone */
-        width: 100%; /* Upewnij się, że wideo wypełnia szerokość */
+        max-height: 80%; 
+        object-fit: contain; 
+        width: 100%; 
+        order: 0; /* Kick Player będzie pierwszy w trybie poziomym */
     }
 
+    /* Twitch Player w trybie poziomym - prawy górny róg Kicka, mały */
     #twitchPlayer {
-        /* W trybie poziomym lepiej ukryć Twitcha domyślnie, albo pozwolić użytkownikowi go pokazać */
-        display: none !important; /* Ukryj go domyślnie w trybie poziomym */
+        position: absolute; /* Musi być absolutny do pozycjonowania w rogu */
+        width: auto !important; /* Pozwól JS ustawić rozmiar */
+        height: auto !important; /* Pozwól JS ustawić rozmiar */
+        top: 10px; /* Domyślna pozycja w rogu mainContent, będzie dostosowana przez JS */
+        right: 10px; /* Domyślna pozycja w rogu mainContent, będzie dostosowana przez JS */
+        left: auto !important; /* Ważne, aby nie kolidować z lewym */
+        margin-top: 0; /* Usuń marginesy z trybu pionowego */
+        border: 1px solid #555; /* Dodaj cienką ramkę */
+        display: none; /* Domyślnie ukryj */
+        z-index: 60; /* Nad Kick Playerem, ale pod menu */
+        pointer-events: auto; /* Powinien być interaktywny, jeśli jest widoczny */
+        order: auto; /* Usuń kolejność z trybu pionowego */
     }
     #twitchPlayer.mobile-visible {
-        /* Jeśli chcemy go pokazać, to poniżej Kicka i będzie scrollowany */
-        position: static;
         display: block !important; 
-        width: 100%;
-        height: auto;
-        margin-top: 10px;
     }
 
+
     #chatSidebar {
-        width: 300px; /* Stała szerokość czatu, jak na desktopie */
-        min-width: 250px; /* Minimalna szerokość czatu */
-        height: 100vh; /* Czat na całą wysokość */
+        width: 300px; 
+        min-width: 250px; 
+        height: 100vh; 
         border-left: 2px solid #333;
-        border-top: none; /* Usuń górną ramkę */
-        min-height: auto; /* Resetuj min-height z trybu pionowego */
+        border-top: none; 
+        min-height: auto; 
+        z-index: 20; 
+        order: 1; /* Czat będzie drugi */
     }
 
     #twitchChatIframe {
         height: 100%;
-        min-height: 0; /* Resetuj min-height */
+        min-height: 0; 
+        pointer-events: auto; 
     }
 
+    /* Przycisk opcji na małych ekranach w trybie poziomym - nadal na górze */
     #optionsToggleBtn {
-        bottom: 10px;
+        bottom: auto; 
+        top: 10px; 
         left: 10px;
-        /* Możesz dostosować, aby był mniej inwazyjny w trybie poziomym */
+        z-index: 200;
     }
     
+    /* MENU OPCJI W TRYBIE POZIOMYM NA TELEFONACH - nadal pod przyciskiem, przewijane */
     #optionsMenu {
-        bottom: 65px; 
+        bottom: auto; 
+        top: 65px; 
         left: 10px;
-        /* W trybie poziomym menu może być mniejsze i nie musi zajmować całej szerokości */
-        width: 180px; /* Mniejsza szerokość */
-        max-height: calc(100vh - 85px); /* Nadal przewijane, jeśli za długie */
-        right: auto; /* Nie rozciągaj do prawej */
+        width: 180px; 
+        max-height: calc(100vh - 85px); 
+        right: auto; 
         font-size: 0.9em;
+        z-index: 199;
     }
     #optionsMenu button {
         font-size: 0.8em;
         padding: 6px 8px;
     }
     .menu-group-row {
-        flex-direction: column; /* Nadal kolumny na małym menu */
+        flex-direction: column; 
         gap: 4px;
     }
     .menu-section {
