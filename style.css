@@ -105,14 +105,14 @@ body {
     cursor: pointer;
     z-index: 200; 
     transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.3s ease; 
-    opacity: 0.8; /* Większa widoczność domyślna */
+    opacity: 0.3; /* Zmieniono domyślną przezroczystość na 30% */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); 
 }
 
 #optionsToggleBtn:hover {
     background: #444; /* Ciemniejszy hover */
     border-color: #777;
-    opacity: 1; 
+    opacity: 1; /* Pełna widoczność po najechaniu */
     transform: scale(1.05); 
 }
 
@@ -282,6 +282,7 @@ body {
         width: 45px;
         height: 45px;
         font-size: 1.8em;
+        opacity: 0.3; /* Zapewnij, że na mobile też jest 30% */
     }
 
     /* MENU OPCJI NA MAŁYCH EKRANACH (ZModyfikowany dla przewijania i lepszego dopasowania) */
