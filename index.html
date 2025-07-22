@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Watchparty</title>
+    <title>watchparty</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/png" href="favicon.png">
 </head>
@@ -27,26 +27,36 @@
     <button id="optionsToggleBtn" title="Opcje Strony">⚙️</button>
 
     <div id="optionsMenu">
-        <div class="menu-group">
-            <button id="shrinkTwitchPlayer" title="Zmniejsz rozmiar odtwarzacza Twitch">➖ Pomniejsz Player TTV</button>
-            <button id="expandTwitchPlayer" title="Zwiększ rozmiar odtwarzacza Twitch">➕ Powiększ Player TTV</button>
+        <div class="menu-section">
+            <div class="menu-group-row">
+                <button id="shrinkTwitchPlayer" title="Zmniejsz rozmiar odtwarzacza Twitch">➖ Pomniejsz Player TTV</button>
+                <button id="expandTwitchPlayer" title="Zwiększ rozmiar odtwarzacza Twitch">➕ Powiększ Player TTV</button>
+            </div>
         </div>
         
-        <div class="menu-group">
-            <button id="positionTopLeft" title="Przenieś odtwarzacz Twitch do lewego górnego rogu">↖️ Przenieś TTV: Lewy Górny</button>
-            <button id="positionTopRight" title="Przenieś odtwarzacz Twitch do prawego górnego rogu">↗️ Przenieś TTV: Prawy Górny</button>
-            <button id="positionBottomLeft" title="Przenieś odtwarzacz Twitch do lewego dolnego rogu">↙️ Przenieś TTV: Lewy Dolny</button>
-            <button id="positionBottomRight" title="Przenieś odtwarzacz Twitch do prawego dolnego rogu">↘️ Przenieś TTV: Prawy Dolny</button>
+        <div class="menu-section">
+            <div class="menu-group-row">
+                <button id="positionTopLeft" title="Przenieś odtwarzacz Twitch do lewego górnego rogu">↖️ Lewy Górny</button>
+                <button id="positionTopRight" title="Przenieś odtwarzacz Twitch do prawego górnego rogu">↗️ Prawy Górny</button>
+            </div>
+            <div class="menu-group-row">
+                <button id="positionBottomLeft" title="Przenieś odtwarzacz Twitch do lewego dolnego rogu">↙️ Lewy Dolny</button>
+                <button id="positionBottomRight" title="Przenieś odtwarzacz Twitch do prawego dolnego rogu">↘️ Prawy Dolny</button>
+            </div>
         </div>
 
-        <div class="menu-group">
-            <button id="toggleChatDock" title="Dokuj/Odeślij odtwarzacz Twitch nad czatem">↔️ Dokuj TTV nad czat</button>
-            <button id="toggleTwitchPlayerVisibility" title="Ukryj/Pokaż odtwarzacz Twitch">👁️ Ukryj/Pokaż TTV</button> 
+        <div class="menu-section">
+            <div class="menu-group-column">
+                <button id="toggleChatDock" title="Dokuj/Odeślij odtwarzacz Twitch nad czatem">↔️ Dokuj TTV nad czat</button>
+                <button id="toggleTwitchPlayerVisibility" title="Ukryj/Pokaż odtwarzacz Twitch">👁️ Ukryj/Pokaż TTV</button> 
+            </div>
         </div>
 
-        <div class="menu-group">
-            <button id="toggleChatVisibilityBtn" title="Ukryj/Pokaż panel czatu">💬 Ukryj/Pokaż Czat</button>
-            <button id="toggleBrowserFullscreen" title="Przełącz tryb pełnoekranowy przeglądarki">🖥️ Pełny Ekran Strony</button>
+        <div class="menu-section">
+            <div class="menu-group-column">
+                <button id="toggleChatVisibilityBtn" title="Ukryj/Pokaż panel czatu">💬 Ukryj/Pokaż Czat</button>
+                <button id="toggleBrowserFullscreen" title="Przełącz tryb pełnoekranowy przeglądarki">🖥️ Pełny Ekran Strony</button>
+            </div>
         </div>
     </div>
 
