@@ -1,4 +1,5 @@
 const twitchPlayer = document.getElementById('twitchPlayer');
+const kickPlayer = document.getElementById('kickPlayer'); // Dodano referencję do kickPlayer
 const chatSidebar = document.getElementById('chatSidebar'); 
 const twitchChatIframe = document.getElementById('twitchChatIframe');
 const mainContent = document.getElementById('mainContent'); 
@@ -8,7 +9,7 @@ const optionsToggleBtn = document.getElementById('optionsToggleBtn');
 const optionsMenu = document.getElementById('optionsMenu');
 
 const shrinkTwitchPlayerBtn = document.getElementById('shrinkTwitchPlayer');
-const expandTwitchPlayerBtn = document.getElementById('expandTwitchPlayer');
+const expandTwitchPlayerBtn = document = document.getElementById('expandTwitchPlayer');
 const positionTopLeftBtn = document.getElementById('positionTopLeft');
 const positionTopRightBtn = document.getElementById('positionTopRight');
 const positionBottomLeftBtn = document.getElementById('positionBottomLeft');
@@ -35,20 +36,32 @@ const defaultTwitchHeight = 240;
 let isPlayerDockedToChat = false; 
 let isChatHidden = false; 
 let isTwitchPlayerHidden = false; 
-let currentTwitchPosition = 'topLeft'; // Śledzenie aktualnej pozycji, gdy nie jest zadokowany
-let lastUndockedTwitchWidth = defaultTwitchWidth; // Zapamiętujemy ostatni rozmiar przed zadokowaniem
-let lastUndockedTwitchHeight = defaultTwitchHeight; // Zapamiętujemy ostatni rozmiar przed zadokowaniem
+let currentTwitchPosition = 'topLeft';
+let lastUndockedTwitchWidth = defaultTwitchWidth;
+let lastUndockedTwitchHeight = defaultTwitchHeight;
+
+// Funkcja sprawdzająca, czy ekran jest mały (poniżej breakpointu dla telefonów)
+function isMobileView() {
+    return window.innerWidth <= 768; // Ten sam breakpoint co w CSS
+}
 
 function adjustKickPlayerSize() {
-    const mainContentRect = mainContent.getBoundingClientRect();
-    const aspectRatio = 16 / 9; 
+    // Ta funkcja będzie teraz prostsza, bo Kick Player zawsze zajmuje 100% szerokości mainContent
+    // Jego wysokość będzie proporcjonalna.
+    // Na telefonach Kick Player może być jedynym widocznym playerem, jeśli Twitch jest ukryty.
+    if (isMobileView()) {
+        kickPlayer.style.width = '100%';
+        kickPlayer.style.height = `${kickPlayer.offsetWidth * 9 / 16}px`; // Wysokość proporcjonalna do szerokości
+    } else {
+        const mainContentRect = mainContent.getBoundingClientRect();
+        const aspectRatio = 16 / 9; 
 
-    let kickWidth = mainContentRect.width;
-    let kickHeight = kickWidth / aspectRatio;
+        let kickWidth = mainContentRect.width;
+        let kickHeight = kickWidth / aspectRatio;
 
-    const kickPlayer = document.getElementById('kickPlayer');
-    kickPlayer.style.width = '100%';
-    kickPlayer.style.height = `${kickHeight}px`;
+        kickPlayer.style.width = '100%';
+        kickPlayer.style.height = `${kickHeight}px`;
+    }
 }
 
 function setGlobalAnimationState(state) {
@@ -99,7 +112,7 @@ document.addEventListener('click', (e) => {
 
 // --- ZARZĄDZANIE PLAYEREM TTV (ROZMIAR I POZYCJA) ---
 function updateTwitchPlayer(newWidth, newHeight, newPosition = null) {
-    if (isGlobalAnimating && newPosition !== 'docked') return; // Pozwól na dokowanie nawet w trakcie animacji
+    if (isGlobalAnimating && newPosition !== 'docked') return;
 
     setGlobalAnimationState(true); 
 
@@ -108,21 +121,41 @@ function updateTwitchPlayer(newWidth, newHeight, newPosition = null) {
 
     // Obsługa dokowania
     if (newPosition === 'docked') {
-        finalWidth = CHAT_VISIBLE_WIDTH; // Szerokość playera taka jak szerokość czatu
-        finalHeight = (finalWidth * 9) / 16; // Oblicz wysokość na podstawie proporcji 16:9
-        twitchPlayer.style.position = 'static'; // Pozycja statyczna dla dokowania
-        twitchPlayer.style.marginBottom = '0px'; // Usunięcie marginesu dolnego
-        chatIframeContainer.prepend(twitchPlayer); // Przenieś player na początek kontenera czatu
-        isPlayerDockedToChat = true;
-        toggleChatDockBtn.textContent = 'Odeślij TTV z czatu';
-        twitchChatIframe.style.height = `calc(100% - ${finalHeight}px)`; // Czat zajmuje resztę miejsca
-        twitchChatIframe.style.top = `${finalHeight}px`; 
-        twitchChatIframe.style.position = 'relative'; 
+        if (isMobileView()) {
+            // Na telefonie, dokowanie oznacza po prostu wyświetlenie poniżej Kicka i zajęcie 100% szerokości
+            twitchPlayer.style.display = 'block'; // Upewnij się, że jest widoczny
+            twitchPlayer.classList.add('mobile-visible'); // Dodaj klasę do stylizacji CSS na mobile
+            twitchPlayer.style.width = '100%';
+            twitchPlayer.style.height = `${twitchPlayer.offsetWidth * 9 / 16}px`; // Wysokość proporcjonalna
+            twitchPlayer.style.position = 'static'; // Statyczny, aby płynął za Kickiem
+            twitchPlayer.style.marginTop = '10px'; // Odstęp
+            mainContent.appendChild(twitchPlayer); // Przenieś do mainContent, jeśli nie był
+            
+            isPlayerDockedToChat = true; // Nadal traktujemy to jako "zadokowany" tryb wyświetlania
+            toggleChatDockBtn.textContent = 'Odeślij TTV z czatu';
+            // Na telefonie czat będzie pod oboma playerami, więc nie zmieniamy jego wysokości
+            twitchChatIframe.style.height = `100%`; // Czat zawsze 100% wysokości kontenera na mobile
+            twitchChatIframe.style.position = 'static'; 
+
+        } else {
+            // Logika dokowania dla dużych ekranów
+            finalWidth = CHAT_VISIBLE_WIDTH;
+            finalHeight = (finalWidth * 9) / 16;
+            twitchPlayer.style.position = 'static';
+            twitchPlayer.style.marginBottom = '0px';
+            chatIframeContainer.prepend(twitchPlayer);
+            isPlayerDockedToChat = true;
+            toggleChatDockBtn.textContent = 'Odeślij TTV z czatu';
+            twitchChatIframe.style.height = `calc(100% - ${finalHeight}px)`;
+            twitchChatIframe.style.top = `${finalHeight}px`; 
+            twitchChatIframe.style.position = 'relative'; 
+        }
     } else {
         // Jeśli nie jest dokowany lub oddokowujemy
         if (isPlayerDockedToChat) {
             mainContent.appendChild(twitchPlayer); // Przenieś player z powrotem do mainContent
-            twitchPlayer.style.position = 'absolute'; // Przywróć pozycję absolutną
+            twitchPlayer.style.position = 'absolute'; // Przywróć pozycję absolutną dla desktop
+            twitchPlayer.classList.remove('mobile-visible'); // Usuń klasę mobile
             isPlayerDockedToChat = false;
             toggleChatDockBtn.textContent = 'Dokuj TTV nad czat';
             twitchChatIframe.style.height = `100%`;
@@ -132,8 +165,12 @@ function updateTwitchPlayer(newWidth, newHeight, newPosition = null) {
             // Przywróć ostatni niezadokowany rozmiar
             finalWidth = lastUndockedTwitchWidth;
             finalHeight = lastUndockedTwitchHeight;
+        } else if (isMobileView()) {
+            // Na telefonie, poza trybem "zadokowanym" (czyli po prostu widocznym pod Kickiem), ukrywamy Twitcha domyślnie
+            twitchPlayer.style.display = 'none';
+            twitchPlayer.classList.remove('mobile-visible');
         } else {
-            // Normalne skalowanie i ograniczenia, gdy nie jest zadokowany
+            // Normalne skalowanie i ograniczenia, gdy nie jest zadokowany i na dużym ekranie
             finalWidth = Math.min(Math.max(newWidth, minTwitchWidth), maxTwitchWidth);
             finalHeight = (finalWidth * 9) / 16;
             finalHeight = Math.min(Math.max(finalHeight, minTwitchHeight), maxTwitchHeight);
@@ -141,10 +178,15 @@ function updateTwitchPlayer(newWidth, newHeight, newPosition = null) {
             // Zapisz rozmiar przed dokowaniem
             lastUndockedTwitchWidth = finalWidth;
             lastUndockedTwitchHeight = finalHeight;
+
+            // Upewnij się, że player jest widoczny i pozycja absolutna
+            twitchPlayer.style.display = 'block';
+            twitchPlayer.style.position = 'absolute';
+            twitchPlayer.style.marginTop = '0'; // Usuń margines, jeśli był
         }
 
-        // Obliczanie nowej pozycji dla niedokowanego playera
-        if (newPosition) {
+        // Obliczanie nowej pozycji dla niedokowanego playera (tylko na dużych ekranach)
+        if (!isMobileView() && newPosition) {
             const kickPlayerRect = document.getElementById('kickPlayer').getBoundingClientRect();
             const padding = 10; 
 
@@ -184,12 +226,16 @@ function updateTwitchPlayer(newWidth, newHeight, newPosition = null) {
         }
     }
 
-    // Zastosuj nowy rozmiar (dla obu przypadków: dokowany i niedokowany)
-    twitchPlayer.style.width = `${finalWidth}px`;
-    twitchPlayer.style.height = `${finalHeight}px`;
+    // Zastosuj nowy rozmiar (dla obu przypadków: dokowany i niedokowany na desktopie)
+    // Na mobile rozmiar jest ustawiany w if (isMobileView())
+    if (!isMobileView() || newPosition === 'docked') { // Apply size if not mobile or if explicitly docked on mobile
+        twitchPlayer.style.width = `${finalWidth}px`;
+        twitchPlayer.style.height = `${finalHeight}px`;
+    }
+
 
     // Obsługa opacity (widoczności) Twitcha
-    if (isTwitchPlayerHidden) {
+    if (isTwitchPlayerHidden && (!isMobileView() || newPosition !== 'docked')) { // Ukryj tylko jeśli nie jesteśmy na mobile i nie jest zadokowany
         twitchPlayer.style.opacity = '0';
     } else {
         twitchPlayer.style.opacity = '1';
@@ -203,8 +249,9 @@ function updateTwitchPlayer(newWidth, newHeight, newPosition = null) {
     toggleOptionsMenu(); 
 }
 
+// Zmodyfikowane listenery dla przycisków rozmiaru i pozycji
 shrinkTwitchPlayerBtn.addEventListener('click', () => {
-    if (isGlobalAnimating) return;
+    if (isGlobalAnimating || isMobileView()) return; // Zablokuj na mobile
     if (isPlayerDockedToChat) {
         alert('Aby zmienić rozmiar, najpierw odeślij TTV z czatu.');
         toggleOptionsMenu();
@@ -213,7 +260,7 @@ shrinkTwitchPlayerBtn.addEventListener('click', () => {
     updateTwitchPlayer(twitchPlayer.offsetWidth - 42, twitchPlayer.offsetHeight, currentTwitchPosition);
 });
 expandTwitchPlayerBtn.addEventListener('click', () => {
-    if (isGlobalAnimating) return;
+    if (isGlobalAnimating || isMobileView()) return; // Zablokuj na mobile
     if (isPlayerDockedToChat) {
         alert('Aby zmienić rozmiar, najpierw odeślij TTV z czatu.');
         toggleOptionsMenu();
@@ -223,31 +270,40 @@ expandTwitchPlayerBtn.addEventListener('click', () => {
 });
 
 positionTopLeftBtn.addEventListener('click', () => {
-    if (isGlobalAnimating) return;
-    // Pozycjonowanie zawsze oddokowuje i przywraca domyślny rozmiar
+    if (isGlobalAnimating || isMobileView()) return; // Zablokuj na mobile
     updateTwitchPlayer(defaultTwitchWidth, defaultTwitchHeight, 'topLeft'); 
 });
 positionTopRightBtn.addEventListener('click', () => {
-    if (isGlobalAnimating) return;
+    if (isGlobalAnimating || isMobileView()) return; // Zablokuj na mobile
     updateTwitchPlayer(defaultTwitchWidth, defaultTwitchHeight, 'topRight'); 
 });
 positionBottomLeftBtn.addEventListener('click', () => {
-    if (isGlobalAnimating) return;
+    if (isGlobalAnimating || isMobileView()) return; // Zablokuj na mobile
     updateTwitchPlayer(defaultTwitchWidth, defaultTwitchHeight, 'bottomLeft'); 
 });
 positionBottomRightBtn.addEventListener('click', () => {
-    if (isGlobalAnimating) return;
+    if (isGlobalAnimating || isMobileView()) return; // Zablokuj na mobile
     updateTwitchPlayer(defaultTwitchWidth, defaultTwitchHeight, 'bottomRight'); 
 });
 
 // --- Funkcjonalność DOKOWANIA ---
 toggleChatDockBtn.addEventListener('click', () => {
-    if (isGlobalAnimating && !isPlayerDockedToChat) return; // Zapobiegaj dokowaniu, jeśli jest już animacja, chyba że oddokowujemy
+    if (isGlobalAnimating && !isPlayerDockedToChat) return;
 
     if (isPlayerDockedToChat) {
-        // Jeśli jest zadokowany, odeślij na ostatnią zapamiętaną pozycję lub topLeft
-        updateTwitchPlayer(lastUndockedTwitchWidth, lastUndockedTwitchHeight, currentTwitchPosition === 'docked' ? 'topLeft' : currentTwitchPosition); 
+        // Oddokuj
+        if (isMobileView()) {
+            // Na mobile po prostu ukryj
+            twitchPlayer.style.display = 'none';
+            twitchPlayer.classList.remove('mobile-visible');
+            isPlayerDockedToChat = false;
+            toggleChatDockBtn.textContent = 'Pokaż TTV pod Kickiem'; // Zmieniony tekst na mobile
+        } else {
+            // Desktop: oddokuj do poprzedniej pozycji
+            updateTwitchPlayer(lastUndockedTwitchWidth, lastUndockedTwitchHeight, currentTwitchPosition === 'docked' ? 'topLeft' : currentTwitchPosition); 
+        }
     } else {
+        // Dokuj
         if (isChatHidden) {
             toggleChatVisibility(true); 
             setTimeout(() => {
@@ -259,6 +315,7 @@ toggleChatDockBtn.addEventListener('click', () => {
             updateTwitchPlayer(CHAT_VISIBLE_WIDTH, CHAT_VISIBLE_WIDTH * 9 / 16, 'docked');
         }
     }
+    toggleOptionsMenu(); // Zamknij menu po kliknięciu
 });
 
 // --- Funkcja do przełączania widoczności Twitch Playera ---
@@ -270,9 +327,16 @@ function toggleTwitchPlayerVisibility() {
 
     if (isTwitchPlayerHidden) {
         twitchPlayer.style.opacity = '0';
+        // Na desktopie ukrywamy, na mobile przestawiamy display
+        if (!isMobileView()) {
+             twitchPlayer.style.display = 'none';
+        }
         toggleTwitchPlayerVisibilityBtn.textContent = '👁️ Pokaż TTV'; 
     } else {
         twitchPlayer.style.opacity = '1';
+        if (!isMobileView()) {
+            twitchPlayer.style.display = 'block';
+        }
         toggleTwitchPlayerVisibilityBtn.textContent = '👁️ Ukryj/Pokaż TTV'; 
     }
 
@@ -293,20 +357,26 @@ function toggleChatVisibility(fromButton = true) {
     if (isChatHidden) { 
         chatSidebar.classList.remove('hidden');
         isChatHidden = false;
+        toggleChatVisibilityBtn.textContent = '💬 Ukryj/Pokaż Czat'; // Resetuj tekst
     } else { 
         chatSidebar.classList.add('hidden');
         isChatHidden = true;
-        // Jeśli player był zadokowany, po ukryciu czatu powinien wrócić na domyślną pozycję
+        // Jeśli player był zadokowany, po ukryciu czatu powinien wrócić na domyślną pozycję lub się ukryć na mobile
         if (isPlayerDockedToChat) {
-            updateTwitchPlayer(lastUndockedTwitchWidth, lastUndockedTwitchHeight, currentTwitchPosition === 'docked' ? 'topLeft' : currentTwitchPosition); 
+            if (isMobileView()) {
+                twitchPlayer.style.display = 'none';
+                twitchPlayer.classList.remove('mobile-visible');
+                isPlayerDockedToChat = false;
+            } else {
+                updateTwitchPlayer(lastUndockedTwitchWidth, lastUndockedTwitchHeight, currentTwitchPosition === 'docked' ? 'topLeft' : currentTwitchPosition); 
+            }
         }
+        toggleChatVisibilityBtn.textContent = '💬 Pokaż Czat'; // Zmień tekst
     }
     
-    // Re-pozycja Twitch Playera po zakończeniu animacji czatu
     setTimeout(() => {
         adjustKickPlayerSize(); 
-        // Jeżeli Twitch Player nie jest zadokowany, przelicz jego pozycję
-        if (!isPlayerDockedToChat) {
+        if (!isPlayerDockedToChat && !isMobileView()) {
             updateTwitchPlayer(twitchPlayer.offsetWidth, twitchPlayer.offsetHeight, currentTwitchPosition); 
         }
         setGlobalAnimationState(false);
@@ -345,8 +415,7 @@ document.addEventListener('fullscreenchange', () => {
     
     setTimeout(() => {
         adjustKickPlayerSize(); 
-        // Po wyjściu z pełnego ekranu, przelicz pozycję Twitcha
-        if (!isPlayerDockedToChat) {
+        if (!isPlayerDockedToChat && !isMobileView()) {
             updateTwitchPlayer(twitchPlayer.offsetWidth, twitchPlayer.offsetHeight, currentTwitchPosition); 
         }
         setGlobalAnimationState(false); 
@@ -355,10 +424,102 @@ document.addEventListener('fullscreenchange', () => {
 
 // Inicjalizacja przy ładowaniu strony
 window.addEventListener('load', () => {
-    setTimeout(() => {
-        adjustKickPlayerSize();
-        updateTwitchPlayer(defaultTwitchWidth, defaultTwitchHeight, 'topLeft'); 
-    }, 200); 
+    // Ustawia początkowe wyświetlanie Twitch playera na mobile
+    if (isMobileView()) {
+        twitchPlayer.style.display = 'none'; // Domyślnie ukryj Twitch playera na mobile
+        // Na mobile, Kick Player powinien być zawsze widoczny i zajmować całą szerokość
+        kickPlayer.style.width = '100%';
+        kickPlayer.style.height = `${kickPlayer.offsetWidth * 9 / 16}px`;
+    } else {
+        setTimeout(() => {
+            adjustKickPlayerSize();
+            updateTwitchPlayer(defaultTwitchWidth, defaultTwitchHeight, 'topLeft'); 
+        }, 200); 
+    }
+    // Zaktualizuj stan przycisków i pozycji na starcie
+    updateButtonStates();
 });
 
-window.addEventListener('resize', adjustKickPlayerSize);
+window.addEventListener('resize', () => {
+    adjustKickPlayerSize();
+    // Ponownie oceniaj, czy jesteśmy na mobile i dostosuj playery
+    if (isMobileView()) {
+        if (!isPlayerDockedToChat) { // Jeśli nie jest "zadokowany" na mobile, czyli pokazany pod Kickiem
+            twitchPlayer.style.display = 'none';
+        } else {
+            // Jeśli był zadokowany/pokazany na mobile, upewnij się, że jest nadal widoczny i ma 100% szerokości
+            twitchPlayer.style.display = 'block';
+            twitchPlayer.style.width = '100%';
+            twitchPlayer.style.height = `${twitchPlayer.offsetWidth * 9 / 16}px`;
+            twitchPlayer.style.position = 'static';
+        }
+        // Na mobile, przyciski rozmiaru i pozycji nie powinny działać
+        shrinkTwitchPlayerBtn.classList.add('disabled-button');
+        expandTwitchPlayerBtn.classList.add('disabled-button');
+        positionTopLeftBtn.classList.add('disabled-button');
+        positionTopRightBtn.classList.add('disabled-button');
+        positionBottomLeftBtn.classList.add('disabled-button');
+        positionBottomRightBtn.classList.add('disabled-button');
+        toggleChatDockBtn.textContent = 'Pokaż TTV pod Kickiem';
+    } else {
+        // Na desktopie przywróć normalne zachowanie
+        if (!isPlayerDockedToChat) {
+            twitchPlayer.style.display = 'block';
+            twitchPlayer.style.position = 'absolute';
+            updateTwitchPlayer(twitchPlayer.offsetWidth, twitchPlayer.offsetHeight, currentTwitchPosition); 
+        } else {
+            // Jeśli był zadokowany, upewnij się, że jest poprawnie zadokowany na desktopie
+            updateTwitchPlayer(CHAT_VISIBLE_WIDTH, CHAT_VISIBLE_WIDTH * 9 / 16, 'docked');
+        }
+
+        shrinkTwitchPlayerBtn.classList.remove('disabled-button');
+        expandTwitchPlayerBtn.classList.remove('disabled-button');
+        positionTopLeftBtn.classList.remove('disabled-button');
+        positionTopRightBtn.classList.remove('disabled-button');
+        positionBottomLeftBtn.classList.remove('disabled-button');
+        positionBottomRightBtn.classList.remove('disabled-button');
+        toggleChatDockBtn.textContent = 'Dokuj TTV nad czat'; // Przywróć tekst
+    }
+    updateButtonStates();
+});
+
+// Nowa funkcja do aktualizacji stanu przycisków w menu
+function updateButtonStates() {
+    if (isMobileView()) {
+        shrinkTwitchPlayerBtn.classList.add('disabled-button');
+        shrinkTwitchPlayerBtn.setAttribute('disabled', 'true');
+        expandTwitchPlayerBtn.classList.add('disabled-button');
+        expandTwitchPlayerBtn.setAttribute('disabled', 'true');
+        positionTopLeftBtn.classList.add('disabled-button');
+        positionTopLeftBtn.setAttribute('disabled', 'true');
+        positionTopRightBtn.classList.add('disabled-button');
+        positionTopRightBtn.setAttribute('disabled', 'true');
+        positionBottomLeftBtn.classList.add('disabled-button');
+        positionBottomLeftBtn.setAttribute('disabled', 'true');
+        positionBottomRightBtn.classList.add('disabled-button');
+        positionBottomRightBtn.setAttribute('disabled', 'true');
+        
+        toggleChatDockBtn.textContent = isPlayerDockedToChat ? 'Ukryj TTV' : 'Pokaż TTV pod Kickiem';
+        toggleTwitchPlayerVisibilityBtn.style.display = 'none'; // Ukryj na mobile, bo i tak sterujemy displayem
+        
+    } else {
+        shrinkTwitchPlayerBtn.classList.remove('disabled-button');
+        shrinkTwitchPlayerBtn.removeAttribute('disabled');
+        expandTwitchPlayerBtn.classList.remove('disabled-button');
+        expandTwitchPlayerBtn.removeAttribute('disabled');
+        positionTopLeftBtn.classList.remove('disabled-button');
+        positionTopLeftBtn.removeAttribute('disabled');
+        positionTopRightBtn.classList.remove('disabled-button');
+        positionTopRightBtn.removeAttribute('disabled');
+        positionBottomLeftBtn.classList.remove('disabled-button');
+        positionBottomLeftBtn.removeAttribute('disabled');
+        positionBottomRightBtn.classList.remove('disabled-button');
+        positionBottomRightBtn.removeAttribute('disabled');
+
+        toggleChatDockBtn.textContent = isPlayerDockedToChat ? 'Odeślij TTV z czatu' : 'Dokuj TTV nad czat';
+        toggleTwitchPlayerVisibilityBtn.style.display = 'flex'; // Pokaż na desktopie
+
+        toggleTwitchPlayerVisibilityBtn.textContent = isTwitchPlayerHidden ? '👁️ Pokaż TTV' : '👁️ Ukryj/Pokaż TTV';
+    }
+    toggleChatVisibilityBtn.textContent = isChatHidden ? '💬 Pokaż Czat' : '💬 Ukryj/Pokaż Czat';
+}
